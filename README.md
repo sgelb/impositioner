@@ -5,8 +5,8 @@ Basic imposition of PDF files
 ### Features
 
 - simple to print and sort
-- automatic calculation of signature length (can be overwritten)
-- n-up imposition, e.g A6 booklet on A4 paper
+- automatic or manual setting of signature length
+- n-up imposition, e.g for printing an A6 booklet on A4 paper
 
 ### Limitations
 
@@ -17,10 +17,10 @@ Basic imposition of PDF files
 
 - [x] basic imposing
 - [x] signatures
-- [ ] user defined output formats
+- [x] user defined output formats
   - [x] standard papersizes: A0 - A8, letter, ...
-  - [ ] scaling
-  - [ ] resizing
+  - [x] scaling
+  - [ ] scale and center each single page instead of result. make it an option
 - [ ] landscape input
 - [ ] fold on short edge
 - [ ] user defined pages per sheet/layout

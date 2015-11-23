@@ -1,34 +1,29 @@
 #!/usr/bin/env python
 
 import argparse
-import os
-import sys
 import math
+import os
 from pdfrw import PdfReader, PdfWriter, PageMerge
-
+import sys
 
 paperformats = {
-    'a0': (2384, 3371),
-    'a1': (1685, 2384),
-    'a2': (1190, 1684),
-    'a3': (842, 1190),
-    'a4': (595, 842),
-    'a5': (420, 595),
-    'a6': (298, 420),
-    'a7': (210, 298),
-    'a8': (148, 210),
-    'b4': (729, 1032),
-    'b5': (516, 729),
-    'letter': (612, 792),
-    'legal': (612, 1008),
-    'ledger': (1224, 792),
-    'tabloid': (792, 1224),
-    'executive': (540, 720)
+    'a0': [2384, 3371],
+    'a1': [1685, 2384],
+    'a2': [1190, 1684],
+    'a3': [842, 1190],
+    'a4': [595, 842],
+    'a5': [420, 595],
+    'a6': [298, 420],
+    'a7': [210, 298],
+    'a8': [148, 210],
+    'b4': [729, 1032],
+    'b5': [516, 729],
+    'letter': [612, 792],
+    'legal': [612, 1008],
+    'ledger': [1224, 792],
+    'tabloid': [792, 1224],
+    'executive': [540, 720]
     }
-
-
-def getPageSize(page):
-    return PageMerge().add(page)[0]['/BBox']
 
 
 def calculateSignatureLength(pageCount):
@@ -39,11 +34,11 @@ def calculateSignatureLength(pageCount):
             pageCount += 4 - pageCount % 4
         return pageCount
 
-    # calculate signaturelength with as less additional blank pages as possible
+    # calculate signature length with fewest additional blank pages. possible
+    # signature lengths are 20, 24, 28, 32 and 36
     signatureLength = pageCount
     remainder = sys.maxsize
 
-    # possible signature lengths: 20, 24, 28, 32, 36
     for length in range(16, 36+1, 4):
         if length - pageCount % length <= remainder:
             remainder = length - pageCount % length
@@ -90,9 +85,38 @@ def merge(pages, rotation):
     # merge pages, using two rows
     result = PageMerge() + (page for page in pages)
     result[-1].x += result[0].w
-    result = result.render()
-    result.Rotate = rotation
-    return result
+    result.rotate = rotation
+    return result.render()
+
+
+def resize(outpages, papersize):
+    outputSize = paperformats[papersize]
+    currentSize = outpages[0].MediaBox[-2:]
+    if outpages[0].Rotate % 180:
+        # at this point, rotation is not "hardcoded" into the dimensions, but
+        # just noted. if the noted rotation would result in a different page
+        # orientation, we switch values
+        currentSize = list(reversed(currentSize))
+
+    scale = min(outputSize[0] / currentSize[0], outputSize[1] / currentSize[1])
+    xMargin = round(0.5 * (outputSize[0] - scale * currentSize[0]))
+    yMargin = round(0.5 * (outputSize[1] - scale * currentSize[1]))
+
+    for idx, page in enumerate(outpages):
+        page = PageMerge().add(page)
+
+        # scale page
+        page[0].scale(scale)
+        page[0].x += xMargin
+        page[0].y += yMargin
+
+        # set new mediabox size
+        page.mbox = [0, 0] + outputSize
+
+        # replace original with resized page
+        outpages[idx] = page.render()
+
+    return outpages
 
 
 if __name__ == '__main__':
@@ -104,11 +128,8 @@ if __name__ == '__main__':
     parser.add_argument('PDF', action='store', help='PDF file')
     parser.add_argument('-n', dest='nup', action='store', type=int,
                         default="2", help='pages per sheet (default: 2)')
-    parser.add_argument('-p', dest='papersize', action='store',
+    parser.add_argument('-p', dest='papersize', action='store', type=str.lower,
                         help='output paper size (default: auto)')
-    parser.add_argument('-s', dest='stretch', action='store_true',
-                        help='stretch pages when resizing. may change aspect '
-                        ' ratio (default: false)')
     parser.add_argument('-l', dest='signatureLength', action='store', type=int,
                         help='Set signature length (default: auto)')
     args = parser.parse_args()
@@ -121,7 +142,7 @@ if __name__ == '__main__':
 
     # validate papersize
     papersize = args.papersize
-    if papersize and papersize.lower() not in paperformats:
+    if papersize and papersize not in paperformats:
         print("Unknown papersize: {}. Valid sizes: {}".format(
             papersize, ', '.join(sorted(paperformats.keys()))))
         sys.exit(1)
@@ -152,8 +173,6 @@ if __name__ == '__main__':
     if not signatureLength:
         signatureLength = calculateSignatureLength(pageCount)
     signatureCount = math.ceil(pageCount / signatureLength)
-    # pageSize = getPageSize(inpages[0])
-    # totalPageCount = pageCount + additionalBlankPagesCount
 
     # add blank pages
     blankPagesCount = signatureLength * signatureCount - pageCount
@@ -175,21 +194,11 @@ if __name__ == '__main__':
 
     # resize
     if papersize:
-        print("Resize")
-        if args.stretch:
-            # TODO: implement resizing stretching pages
-            print("dont keep ratio")
-        else:
-            # TODO: implement resizing keeping aspect pages
-            print("keep ratio")
-        # o = PageMerge().add(outpages[0])
-        # o[0].scale(0.5)
-        # outpages[0] = o.render()
-        # outpages = resize(outpages, args.papersize)
+        outpages = resize(outpages, papersize)
 
     # save imposed pdf
     outfn = 'booklet.' + os.path.basename(infile)
-    print("Save imposed pdf to", outfn)
+    print("Imposed PDF file saved to", outfn)
     PdfWriter().addpages(outpages).write(outfn)
 
 # vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4
