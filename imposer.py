@@ -89,10 +89,22 @@ def merge(pages, rotation):
     return result.render()
 
 
-def resize(outpages, papersize):
-    outputSize = paperformats[papersize]
-    currentSize = outpages[0].MediaBox[-2:]
-    if outpages[0].Rotate % 180:
+def calculateScaledSubPageSize(pagesPerSheet, papersize):
+    # return [w, h] of subpage scaled according to final output size
+    square = math.sqrt(pagesPerSheet)
+    if square.is_integer():
+        # columns = rows = square, divide width and height by square
+        return [round(papersize[0] / square), round(papersize[1] / square)]
+    else:
+        # columns is first multiple of 2 lesser than square
+        columns = square - square % 2
+        rows = pagesPerSheet / columns
+        return [round(papersize[0] / columns), round(papersize[1] / rows)]
+
+
+def resize(outpages, outputSize):
+    currentSize = [int(float(value)) for value in outpages[0].MediaBox[-2:]]
+    if outpages[0].Rotate:
         # at this point, rotation is not "hardcoded" into the dimensions, but
         # just noted. if the noted rotation would result in a different page
         # orientation, we switch values
@@ -130,6 +142,9 @@ if __name__ == '__main__':
                         default="2", help='pages per sheet (default: 2)')
     parser.add_argument('-p', dest='papersize', action='store', type=str.lower,
                         help='output paper size (default: auto)')
+    parser.add_argument('-c', dest='centerSubpage', action='store_true',
+                        help='Center each single page when resizing '
+                             '(default: off)')
     parser.add_argument('-l', dest='signatureLength', action='store', type=int,
                         help='Set signature length (default: auto)')
     args = parser.parse_args()
@@ -189,12 +204,18 @@ if __name__ == '__main__':
         signature[len(signature)//2:] = list(
                 reversed(signature[len(signature)//2:]))
 
+        # resize pages before merging
+        if papersize and args.centerSubpage:
+            outputSize = calculateScaledSubPageSize(pagesPerSheet,
+                                                    paperformats[papersize])
+            signature = resize(signature, outputSize)
+
         # impose each signature
         outpages.extend(impose(signature, pagesPerSheet))
 
-    # resize
+    # resize result
     if papersize:
-        outpages = resize(outpages, papersize)
+        outpages = resize(outpages, paperformats[papersize])
 
     # save imposed pdf
     outfn = 'booklet.' + os.path.basename(infile)

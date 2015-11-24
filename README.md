@@ -20,7 +20,7 @@ Basic imposition of PDF files
 - [x] user defined output formats
   - [x] standard papersizes: A0 - A8, letter, ...
   - [x] scaling
-  - [ ] scale and center each single page instead of result. make it an option
+  - [x] scale and center each single page instead of result. make it an option
 - [ ] landscape input
 - [ ] fold on short edge
 - [ ] user defined pages per sheet/layout
