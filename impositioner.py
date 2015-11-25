@@ -54,7 +54,7 @@ def getSignaturePages(inpages, signatureLength):
 
 
 def split(pages, pagesPerSheet):
-    '''split pages in pagesPerSheet parts of equal lenght'''
+    # split pages in pagesPerSheet parts of equal lenght
     length = len(pages)
     npages = []
     for i in range(pagesPerSheet):
@@ -134,17 +134,17 @@ def resize(outpages, outputSize):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
             description='''
-            Impose PDF file.
+            Impose PDF file
             ''')
 
     parser.add_argument('PDF', action='store', help='PDF file')
     parser.add_argument('-n', dest='nup', action='store', type=int,
                         default="2", help='pages per sheet (default: 2)')
-    parser.add_argument('-p', dest='papersize', action='store', type=str.lower,
-                        help='output paper size (default: auto)')
+    parser.add_argument('-p', dest='paperformat', action='store',
+                        type=str.lower,
+                        help='Output paper format (default: auto)')
     parser.add_argument('-c', dest='centerSubpage', action='store_true',
-                        help='Center each single page when resizing '
-                             '(default: off)')
+                        help='Center each page when resizing')
     parser.add_argument('-l', dest='signatureLength', action='store', type=int,
                         help='Set signature length (default: auto)')
     args = parser.parse_args()
@@ -155,8 +155,8 @@ if __name__ == '__main__':
         print("File does not exist: {}".format(infile))
         sys.exit(1)
 
-    # validate papersize
-    papersize = args.papersize
+    # validate paperformat
+    papersize = args.paperformat
     if papersize and papersize not in paperformats:
         print("Unknown papersize: {}. Valid sizes: {}".format(
             papersize, ', '.join(sorted(paperformats.keys()))))
@@ -219,7 +219,5 @@ if __name__ == '__main__':
 
     # save imposed pdf
     outfn = 'booklet.' + os.path.basename(infile)
-    print("Imposed PDF file saved to", outfn)
+    print("Imposed PDF file saved to {}".format(outfn))
     PdfWriter().addpages(outpages).write(outfn)
-
-# vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4
