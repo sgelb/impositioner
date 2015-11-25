@@ -1,4 +1,4 @@
-## pdfImposer
+## Impositioner
 
 Basic imposition of PDF files
 
@@ -16,15 +16,18 @@ Basic imposition of PDF files
   - [x] standard papersizes: A0 - A8, letter, ...
   - [x] scaling
   - [x] scale and center each single page instead of result. make it an option
+- [ ] support for landscape in- and output
+- [ ] support folding on short edge
 - [ ] user defined output
   - [ ] custom output size
-  - [ ] custom layout, e.g. 1x3
-- [ ] support for landscape in-/output
-- [ ] support folding on short edge
+  - [ ] custom layout, e.g. 1x3, allowing whitespace
+- [ ] more usage infos and explanation of cli options
+- [ ] add license
 - [ ] illustrated help for folding/cutting
 - [ ] add cover from extra pdf file
 
-Thinking about:
+### Maybe
+
 - [ ] better name
 - [ ] support rtl/fold on right side
 - [ ] double/parallel print
