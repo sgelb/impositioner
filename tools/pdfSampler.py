@@ -13,6 +13,8 @@ if __name__ == '__main__':
                         help='number of pages', )
     parser.add_argument('size', action='store', type=str.upper,
                         choices=['A4', 'A5', 'A6'], help='paper size')
+    parser.add_argument('--landscape', '-l', action='store_true',
+                        help='output in landscape (default: portrait)')
     args = parser.parse_args()
 
     size = args.size
@@ -23,7 +25,12 @@ if __name__ == '__main__':
     elif size == "A6":
         pagesize = pagesizes.A6
 
-    outfname = args.size + "_" + str(args.pages) + ".pdf"
+    orientation = "P"
+    if args.landscape:
+        pagesize = pagesizes.landscape(pagesize)
+        orientation = "L"
+
+    outfname = "{}_{}_{}.pdf".format(args.size, str(args.pages), orientation)
     canvas = canvas.Canvas(outfname, pagesize)
     w, h = pagesize
     font = canvas.getAvailableFonts()[0]
