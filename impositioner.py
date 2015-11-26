@@ -186,7 +186,7 @@ if __name__ == '__main__':
                         help='Output paper format (default: auto)')
     parser.add_argument('-c', dest='centerSubpage', action='store_true',
                         help='Center each page when resizing')
-    parser.add_argument('-l', dest='signatureLength', action='store', type=int,
+    parser.add_argument('-s', dest='signatureLength', action='store', type=int,
                         help='Set signature length (default: auto)')
     args = parser.parse_args()
 
@@ -197,23 +197,25 @@ if __name__ == '__main__':
         sys.exit(1)
 
     # validate paperformat
-    papersize = args.paperformat
-    if papersize and papersize not in paperformats:
-        print("Unknown papersize: {}. Valid sizes: {}".format(
-            papersize, ', '.join(sorted(paperformats.keys()))))
-        sys.exit(1)
+    papersize = None
+    if args.paperformat:
+        if args.paperformat not in paperformats:
+            print("Unknown paper format: {}. Valid sizes: {}".format(
+                args.paperformat, ', '.join(sorted(paperformats.keys()))))
+            sys.exit(1)
+        else:
+            papersize = paperformats[args.paperformat]
 
     # validate nup
     pagesPerSheet = args.nup
-    if pagesPerSheet:
-        if pagesPerSheet < 2:
-            print("Pages per sheet must be a greater than 1, is {}".format(
-                  pagesPerSheet))
-            sys.exit(1)
-        if not math.log2(pagesPerSheet).is_integer():
-            print("Pages per sheet must be a power of 2, is {}".format(
-                  pagesPerSheet))
-            sys.exit(1)
+    if pagesPerSheet < 2:
+        print("Pages per sheet must be a greater than 1, is {}".format(
+              pagesPerSheet))
+        sys.exit(1)
+    if not math.log2(pagesPerSheet).is_integer():
+        print("Pages per sheet must be a power of 2, is {}".format(
+              pagesPerSheet))
+        sys.exit(1)
 
     # validate signatureLength argument
     signatureLength = args.signatureLength
