@@ -16,7 +16,7 @@ Basic imposition of PDF files
   - [x] standard papersizes: A0 - A8, letter, ...
   - [x] scaling
   - [x] scale and center each single page instead of result. make it an option
-- [ ] support for landscape in- and output
+- [x] support for landscape input
 - [ ] support folding on short edge
 - [ ] user defined output
   - [ ] custom output size

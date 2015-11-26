@@ -69,7 +69,7 @@ def getSignaturePages(inpages, signatureLength):
 
 
 def split(pages, pagesPerSheet):
-    # split pages in pagesPerSheet parts of equal lenght
+    # split pages in pagesPerSheet parts of equal length
     length = len(pages)
     npages = []
     for i in range(pagesPerSheet):
@@ -123,7 +123,7 @@ def calculateScaledSubPageSize(pagesPerSheet, papersize):
 
 def resize(outpages, outputSize):
     currentSize = [int(float(value)) for value in outpages[0].MediaBox[-2:]]
-    if outpages[0].Rotate in (-90, 90, -270, 270):
+    if outpages[0].Rotate in (90, 270):
         # at this point, rotation is not "hardcoded" into the dimensions, but
         # just noted. if the noted rotation would result in a different page
         # orientation, we switch values
@@ -148,6 +148,28 @@ def resize(outpages, outputSize):
         outpages[idx] = page.render()
 
     return outpages
+
+
+def isLandscape(page):
+    size = [int(float(value)) for value in page.MediaBox[-2:]]
+
+    if page.Rotate in (90, 270):
+        size = list(reversed(size))
+
+    if size[0] > size[1]:
+        # landscape
+        return True
+
+    return False
+
+
+def toPortrait(inpages):
+    for idx, page in enumerate(inpages):
+        if isLandscape(page):
+            page.Rotate = 270
+            inpages[idx] = page
+
+    return inpages
 
 
 if __name__ == '__main__':
@@ -215,6 +237,10 @@ if __name__ == '__main__':
         blank.mbox = inpages[0].MediaBox
         inpages.extend([blank.render()] * blankPagesCount)
 
+    # calculate output size of single page for centering content
+    if papersize and args.centerSubpage:
+        outputSize = calculateScaledSubPageSize(pagesPerSheet, papersize)
+
     # impose
     outpages = []
     # split pages in signatures
@@ -223,10 +249,11 @@ if __name__ == '__main__':
         signature[len(signature)//2:] = list(
                 reversed(signature[len(signature)//2:]))
 
+        # rotate pages to portrait
+        signature = toPortrait(signature)
+
         # resize pages before merging
         if papersize and args.centerSubpage:
-            outputSize = calculateScaledSubPageSize(pagesPerSheet,
-                                                    paperformats[papersize])
             signature = resize(signature, outputSize)
 
         # impose each signature
@@ -234,7 +261,7 @@ if __name__ == '__main__':
 
     # resize result
     if papersize:
-        outpages = resize(outpages, paperformats[papersize])
+        outpages = resize(outpages, papersize)
 
     # save imposed pdf
     outfn = 'booklet.' + os.path.basename(infile)
