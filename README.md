@@ -22,7 +22,7 @@ Basic imposition of PDF files
   - [ ] custom output size
   - [ ] custom layout, e.g. 1x3, allowing whitespace
 - [ ] more usage infos and explanation of cli options
-- [ ] add license
+- [x] add license
 - [ ] illustrated help for folding/cutting
 - [ ] add cover from extra pdf file
 
