@@ -68,17 +68,6 @@ def getSignaturePages(inpages, signatureLength):
     return signatures
 
 
-def split(pages, pagesPerSheet):
-    # split pages in pagesPerSheet parts of equal length
-    length = len(pages)
-    npages = []
-    for i in range(pagesPerSheet):
-        start = i * length // pagesPerSheet
-        end = (i + 1) * length // pagesPerSheet
-        npages.append(pages[start:end])
-    return npages
-
-
 def impose(pages, pagesPerSheet):
     if pagesPerSheet == 1:
         return pages
