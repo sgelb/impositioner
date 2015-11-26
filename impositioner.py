@@ -123,7 +123,7 @@ def calculateScaledSubPageSize(pagesPerSheet, papersize):
 
 def resize(outpages, outputSize):
     currentSize = [int(float(value)) for value in outpages[0].MediaBox[-2:]]
-    if outpages[0].Rotate:
+    if outpages[0].Rotate in (-90, 90, -270, 270):
         # at this point, rotation is not "hardcoded" into the dimensions, but
         # just noted. if the noted rotation would result in a different page
         # orientation, we switch values
