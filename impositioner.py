@@ -106,6 +106,10 @@ def merge(pages, rotation):
 
 def calculateScaledSubPageSize(pagesPerSheet, papersize):
     # return [w, h] of subpage scaled according to final output size
+    if pagesPerSheet == 2:
+        # columns = 2, rows = 1
+        return [round(papersize[1] / 2), round(papersize[0])]
+
     square = math.sqrt(pagesPerSheet)
     if square.is_integer():
         # columns = rows = square, divide width and height by square
