@@ -30,6 +30,8 @@ if __name__ == '__main__':
                         choices=['A4', 'A5', 'A6'], help='paper size')
     parser.add_argument('--landscape', '-l', action='store_true',
                         help='output in landscape (default: portrait)')
+    parser.add_argument('--bbox', '-b', action='store_true',
+                        help='draw bbox')
     args = parser.parse_args()
 
     size = args.size
@@ -55,6 +57,10 @@ if __name__ == '__main__':
         canvas.drawCentredString(w/2, h/2 + 50, size)
         canvas.setFont(font, 100)
         canvas.drawCentredString(w/2, h/2 - 50, str(i))
+        if args.bbox:
+            canvas.setLineWidth(5)
+            canvas.setStrokeColorRGB(255, 0, 255)
+            canvas.rect(5, 5, w - 10, h - 10)
         canvas.showPage()
     canvas.save()
 
