@@ -19,6 +19,7 @@ import argparse
 import math
 import os
 from pdfrw import PdfReader, PdfWriter, PageMerge
+import re
 import sys
 
 paperformats = {
@@ -38,6 +39,13 @@ paperformats = {
     'ledger': [1224, 792],
     'tabloid': [792, 1224],
     'executive': [540, 720]
+    }
+
+# dots per unit
+units = {
+    'mm': 2.834,
+    'cm': 28.34,
+    'inch': 72
     }
 
 
@@ -170,9 +178,14 @@ if __name__ == '__main__':
     parser.add_argument('PDF', action='store', help='PDF file')
     parser.add_argument('-n', dest='nup', action='store', type=int,
                         default="2", help='pages per sheet (default: 2)')
-    parser.add_argument('-p', dest='paperformat', action='store',
-                        type=str.lower,
-                        help='Output paper format (default: auto)')
+    parser.add_argument('-f', dest='paperformat', action='store',
+                        type=str.lower, metavar='FORMAT',
+                        help='Set output paper format. Must be standard '
+                        'paper format (A4, letter, ...) or WIDTHxHEIGHT '
+                        '(default: auto)')
+    parser.add_argument('-u', dest='unit', action='store',
+                        default='mm', choices=['cm', 'inch', 'mm'],
+                        help='Unit for custom output format (default: mm)')
     parser.add_argument('-c', dest='centerSubpage', action='store_true',
                         help='Center each page when resizing')
     parser.add_argument('-s', dest='signatureLength', action='store', type=int,
@@ -188,12 +201,23 @@ if __name__ == '__main__':
     # validate paperformat
     papersize = None
     if args.paperformat:
-        if args.paperformat not in paperformats:
-            print("Unknown paper format: {}. Valid sizes: {}".format(
-                args.paperformat, ', '.join(sorted(paperformats.keys()))))
-            sys.exit(1)
-        else:
+        # standard format
+        if args.paperformat in paperformats:
             papersize = paperformats[args.paperformat]
+
+        # custom format
+        if not papersize:
+            pattern = re.compile('^([0-9]*\.?[0-9]+)x([0-9]*\.?[0-9]+)$', re.I)
+            match = re.match(pattern, args.paperformat)
+            if match:
+                papersize = [round(units[args.unit] * float(match.group(1))),
+                             round(units[args.unit] * float(match.group(2)))]
+        # invalid input
+        if not papersize:
+            print("Unknown paper format: {}. Must be WIDTHxHEIGHT (e.g 4.3x11)"
+                  " or one of the following standard formats: {}".format(
+                    args.paperformat, ', '.join(sorted(paperformats.keys()))))
+            sys.exit(1)
 
     # validate nup
     pagesPerSheet = args.nup
