@@ -76,7 +76,7 @@ def getSignaturePages(inpages, signatureLength):
     return signatures
 
 
-def impose(pages, pagesPerSheet):
+def impose(pages, pagesPerSheet, binding):
     if pagesPerSheet == 1:
         return pages
 
@@ -85,19 +85,26 @@ def impose(pages, pagesPerSheet):
     rotation = 90 if math.log2(pagesPerSheet) % 2 else 270
     for i in range(0, half, 2):
         # frontside
-        npages.append(merge((pages[half+i], pages[i]), rotation))
+        npages.append(merge((pages[half+i], pages[i]), rotation, binding))
         # backside
         npages.append(merge((pages[i+1], pages[half+i+1]),
-                            (rotation+180) % 360))
+                            (rotation+180) % 360, binding))
 
-    return impose(npages, pagesPerSheet // 2)
+    return impose(npages, pagesPerSheet // 2, binding)
 
 
-def merge(pages, rotation):
-    # merge pages, using two rows
+def merge(pages, rotation, binding):
     result = PageMerge() + (page for page in pages)
-    result[-1].x += result[0].w
-    result.rotate = rotation
+    if binding == "left":
+        result[-1].x += result[0].w
+        result.rotate = rotation if isLandscape(result) else 0
+    elif binding == "top":
+        result[0].y += result[0].h
+        result.rotate = rotation if not isLandscape(result) else 0
+    else:
+        print("Unknown binding", binding)
+        sys.exit(1)
+
     return result.render()
 
 
@@ -120,11 +127,18 @@ def calculateScaledSubPageSize(pagesPerSheet, papersize):
 
 def resize(outpages, outputSize):
     currentSize = [int(float(value)) for value in outpages[0].MediaBox[-2:]]
+
     if outpages[0].Rotate in (90, 270):
         # at this point, rotation is not "hardcoded" into the dimensions, but
         # just noted. if the noted rotation would result in a different page
         # orientation, we switch values
         currentSize = list(reversed(currentSize))
+
+    # rotate outputSize if outpages would fit better
+    outRatio = outputSize[0] / outputSize[1]
+    curRatio = currentSize[0] / currentSize[1]
+    if (outRatio > 1 and curRatio <= 1) or (outRatio <= 1 and curRatio > 1):
+        outputSize = list(reversed(outputSize))
 
     scale = min(outputSize[0] / currentSize[0], outputSize[1] / currentSize[1])
     xMargin = round(0.5 * (outputSize[0] - scale * currentSize[0]))
@@ -148,25 +162,8 @@ def resize(outpages, outputSize):
 
 
 def isLandscape(page):
-    size = [int(float(value)) for value in page.MediaBox[-2:]]
-
-    if page.Rotate in (90, 270):
-        size = list(reversed(size))
-
-    if size[0] > size[1]:
-        # landscape
-        return True
-
-    return False
-
-
-def toPortrait(inpages):
-    for idx, page in enumerate(inpages):
-        if isLandscape(page):
-            page.Rotate = 270
-            inpages[idx] = page
-
-    return inpages
+    dim = page.xobj_box[2:]
+    return dim[0] > dim[1]
 
 
 if __name__ == '__main__':
@@ -177,19 +174,22 @@ if __name__ == '__main__':
 
     parser.add_argument('PDF', action='store', help='PDF file')
     parser.add_argument('-n', dest='nup', action='store', type=int,
-                        default="2", help='pages per sheet (default: 2)')
+                        default="2", help='Pages per sheet (default: 2)')
     parser.add_argument('-f', dest='paperformat', action='store',
                         type=str.lower, metavar='FORMAT',
-                        help='Set output paper format. Must be standard '
+                        help='Output paper format. Must be standard '
                         'paper format (A4, letter, ...) or WIDTHxHEIGHT '
                         '(default: auto)')
     parser.add_argument('-u', dest='unit', action='store',
                         default='mm', choices=['cm', 'inch', 'mm'],
                         help='Unit for custom output format (default: mm)')
+    parser.add_argument('-b', dest='binding', action='store', type=str.lower,
+                        default='left', choices=['left', 'top'],
+                        help='Side of binding (default: left)')
     parser.add_argument('-c', dest='centerSubpage', action='store_true',
                         help='Center each page when resizing')
     parser.add_argument('-s', dest='signatureLength', action='store', type=int,
-                        help='Set signature length (default: auto)')
+                        help='Signature length (default: auto)')
     args = parser.parse_args()
 
     # validate infile argument
@@ -207,6 +207,7 @@ if __name__ == '__main__':
 
         # custom format
         if not papersize:
+            # floatXfloat
             pattern = re.compile('^([0-9]*\.?[0-9]+)x([0-9]*\.?[0-9]+)$', re.I)
             match = re.match(pattern, args.paperformat)
             if match:
@@ -264,15 +265,12 @@ if __name__ == '__main__':
         signature[len(signature)//2:] = list(
                 reversed(signature[len(signature)//2:]))
 
-        # rotate pages to portrait
-        signature = toPortrait(signature)
-
         # resize pages before merging
         if papersize and args.centerSubpage:
             signature = resize(signature, outputSize)
 
         # impose each signature
-        outpages.extend(impose(signature, pagesPerSheet))
+        outpages.extend(impose(signature, pagesPerSheet, args.binding))
 
     # resize result
     if papersize:

@@ -11,8 +11,8 @@ Basic imposition of PDF files
 ### Usage
 
 ```
-usage: impositioner.py [-h] [-n NUP] [-f FORMAT] [-u {cm,inch,mm}] [-c]
-                       [-s SIGNATURELENGTH]
+usage: impositioner.py [-h] [-n NUP] [-f FORMAT] [-u {cm,inch,mm}]
+                       [-b {left,top}] [-c] [-s SIGNATURELENGTH]
                        PDF
 
 Impose PDF file
@@ -22,12 +22,13 @@ positional arguments:
 
 optional arguments:
   -h, --help          show this help message and exit
-  -n NUP              pages per sheet (default: 2)
-  -f FORMAT           Set output paper format. Must be standard paper format
-                      (A4, letter, ...) or WIDTHxHEIGHT (default: auto)
+  -n NUP              Pages per sheet (default: 2)
+  -f FORMAT           Output paper format. Must be standard paper format (A4,
+                      letter, ...) or WIDTHxHEIGHT (default: auto)
   -u {cm,inch,mm}     Unit for custom output format (default: mm)
+  -b {left,top}       Side of binding (default: left)
   -c                  Center each page when resizing
-  -s SIGNATURELENGTH  Set signature length (default: auto)
+  -s SIGNATURELENGTH  Signature length (default: auto)
 ```
 
 ### Todo
@@ -40,7 +41,8 @@ optional arguments:
   - [x] scale and center each single page instead of result. make it an option
 - [x] support for landscape input
 - [x] add license
-- [ ] support folding on short edge
+- [x] option for binding on top
+  - [ ] option for binding on right and bottom
 - [ ] user defined output
   - [x] custom output size
   - [ ] custom layout, e.g. 1x3, allowing whitespace
@@ -48,6 +50,8 @@ optional arguments:
 - [ ] illustrated help for folding/cutting
 - [ ] add front- and/or backcover from extra pdf file
 - [ ] add blank pages for easy separation of signatures after printing
+- [ ] check for correct bookbinding terms: section/signature, page/sheet/leaf, etc
+
 
 ### Maybe
 
