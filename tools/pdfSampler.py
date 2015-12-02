@@ -58,23 +58,24 @@ if __name__ == '__main__':
                     args.paperformat, ', '.join(sorted(paperformats.keys()))))
 
     pagesize = paperformats[args.size]
-    orientation = "P"
+    orientation = "portrait"
     if args.landscape:
         pagesize = list(reversed(pagesize))
-        orientation = "L"
+        orientation = "landscape"
 
-    outfname = "{}_{}_{}.pdf".format(args.size, str(args.pages), orientation)
+    outfname = "{}_{}_{}.pdf".format(args.size, orientation, str(args.pages))
     canvas = canvas.Canvas(outfname, pagesize)
     w, h = pagesize
     font = canvas.getAvailableFonts()[0]
 
     for i in range(1, args.pages + 1):
         canvas.setFont(font, 50)
+        canvas.drawCentredString(w/2, h/2 + 100, orientation)
         canvas.drawCentredString(w/2, h/2 + 50, args.size)
         canvas.setFont(font, 100)
         canvas.drawCentredString(w/2, h/2 - 50, str(i))
         if args.bbox:
-            canvas.setLineWidth(5)
+            canvas.setLineWidth(2)
             canvas.setStrokeColorRGB(255, 0, 255)
             canvas.rect(5, 5, w - 10, h - 10)
         canvas.showPage()
