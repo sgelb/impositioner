@@ -17,7 +17,25 @@
 
 import argparse
 from reportlab.pdfgen import canvas
-from reportlab.lib import pagesizes
+
+paperformats = {
+    'a0': [2384, 3371],
+    'a1': [1685, 2384],
+    'a2': [1190, 1684],
+    'a3': [842, 1190],
+    'a4': [595, 842],
+    'a5': [420, 595],
+    'a6': [298, 420],
+    'a7': [210, 298],
+    'a8': [148, 210],
+    'b4': [729, 1032],
+    'b5': [516, 729],
+    'letter': [612, 792],
+    'legal': [612, 1008],
+    'ledger': [1224, 792],
+    'tabloid': [792, 1224],
+    'executive': [540, 720]
+    }
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
@@ -26,25 +44,23 @@ if __name__ == '__main__':
             ''')
     parser.add_argument('pages', action='store', type=int,
                         help='number of pages', )
-    parser.add_argument('size', action='store', type=str.upper,
-                        choices=['A4', 'A5', 'A6'], help='paper size')
+    parser.add_argument('size', action='store', type=str.lower,
+                        help='standard paper format like A4, letter, ')
     parser.add_argument('--landscape', '-l', action='store_true',
                         help='output in landscape (default: portrait)')
     parser.add_argument('--bbox', '-b', action='store_true',
                         help='draw bbox')
     args = parser.parse_args()
 
-    size = args.size
-    if size == "A4":
-        pagesize = pagesizes.A4
-    elif size == "A5":
-        pagesize = pagesizes.A5
-    elif size == "A6":
-        pagesize = pagesizes.A6
+    if args.size not in paperformats:
+        print("Unknown paper format: {}. Must be one of the following "
+              "standard formats: {}".format(
+                    args.paperformat, ', '.join(sorted(paperformats.keys()))))
 
+    pagesize = paperformats[args.size]
     orientation = "P"
     if args.landscape:
-        pagesize = pagesizes.landscape(pagesize)
+        pagesize = list(reversed(pagesize))
         orientation = "L"
 
     outfname = "{}_{}_{}.pdf".format(args.size, str(args.pages), orientation)
@@ -54,7 +70,7 @@ if __name__ == '__main__':
 
     for i in range(1, args.pages + 1):
         canvas.setFont(font, 50)
-        canvas.drawCentredString(w/2, h/2 + 50, size)
+        canvas.drawCentredString(w/2, h/2 + 50, args.size)
         canvas.setFont(font, 100)
         canvas.drawCentredString(w/2, h/2 - 50, str(i))
         if args.bbox:
