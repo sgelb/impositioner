@@ -101,6 +101,12 @@ def merge(pages, rotation, binding):
     elif binding == "top":
         result[0].y += result[0].h
         result.rotate = rotation if not isLandscape(result) else 0
+    elif binding == "right":
+        result[0].x += result[0].w
+        result.rotate = rotation if isLandscape(result) else 0
+    elif binding == "bottom":
+        result[-1].y += result[0].h
+        result.rotate = rotation if not isLandscape(result) else 0
     else:
         print("Unknown binding", binding)
         sys.exit(1)
@@ -184,7 +190,8 @@ if __name__ == '__main__':
                         default='mm', choices=['cm', 'inch', 'mm'],
                         help='Unit for custom output format (default: mm)')
     parser.add_argument('-b', dest='binding', action='store', type=str.lower,
-                        default='left', choices=['left', 'top'],
+                        choices=['left', 'top', 'right', 'bottom'],
+                        default='left',
                         help='Side of binding (default: left)')
     parser.add_argument('-c', dest='centerSubpage', action='store_true',
                         help='Center each page when resizing')

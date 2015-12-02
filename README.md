@@ -41,13 +41,10 @@ optional arguments:
   - [x] scale and center each single page instead of result. make it an option
 - [x] support for landscape input
 - [x] add license
-- [x] option for binding on top
-  - [ ] option for binding on right and bottom
-- [ ] user defined output
-  - [x] custom output size
-  - [ ] custom layout, e.g. 1x3, allowing whitespace
-- [ ] more usage infos, explanation of cli options and examples
-- [ ] illustrated help for folding/cutting
+- [x] option for setting binding side (left, top, right, bottom)
+- [x] custom output size
+- [ ] custom layout, e.g. 2x3
+- [ ] more usage infos, explanation of cli options, examples and illustrated help for folding/cutting
 - [ ] add front- and/or backcover from extra pdf file
 - [ ] add blank pages for easy separation of signatures after printing
 - [ ] check for correct bookbinding terms: section/signature, page/sheet/leaf, etc
@@ -56,7 +53,6 @@ optional arguments:
 ### Maybe
 
 - [ ] better name
-- [ ] support rtl/fold on right side
 - [ ] double/parallel print
 - [ ] add cut line
 - [ ] creep/shingling/push out
