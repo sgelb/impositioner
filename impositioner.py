@@ -115,6 +115,12 @@ def merge(pages, rotation, binding):
     return result.render()
 
 
+def createBlankCopy(page):
+    blankPage = PageMerge()
+    blankPage.mbox = page.MediaBox
+    return blankPage.render()
+
+
 def calculateScaledSubPageSize(pagesPerSheet, papersize):
     # return [w, h] of subpage scaled according to final output size
     if pagesPerSheet == 2:
@@ -130,6 +136,19 @@ def calculateScaledSubPageSize(pagesPerSheet, papersize):
         columns = square - square % 2
         rows = pagesPerSheet / columns
         return [round(papersize[0] / columns), round(papersize[1] / rows)]
+
+
+def addBlanks(signature, pagesPerSheet):
+    remainder = len(signature) % (2 * pagesPerSheet)
+    if remainder:
+        blankPagesCount = ((2 * pagesPerSheet) - remainder)
+        blankPage = createBlankCopy(signature[0])
+        blankPages = ([blankPage] * (blankPagesCount // 2))
+        # add blanks as pairs of front- and backsides
+        signature[len(signature)//2:len(signature)//2] = blankPages
+        signature.extend(blankPages)
+
+    return signature
 
 
 def resize(outpages, outputSize):
@@ -281,9 +300,7 @@ if __name__ == '__main__':
     # add blank pages
     blankPagesCount = signatureLength * signatureCount - pageCount
     if blankPagesCount:
-        blank = PageMerge()
-        blank.mbox = inpages[0].MediaBox
-        inpages.extend([blank.render()] * blankPagesCount)
+        inpages.extend([createBlankCopy(inpages[0])] * blankPagesCount)
 
     # calculate output size of single page for centering content
     if papersize and args.centerSubpage:
@@ -296,6 +313,9 @@ if __name__ == '__main__':
         # reverse second half of signature to simplify imposition
         signature[len(signature)//2:] = list(
                 reversed(signature[len(signature)//2:]))
+
+        # add blank pages
+        signature = addBlanks(signature, pagesPerSheet)
 
         # resize pages before merging
         if papersize and args.centerSubpage:
@@ -310,5 +330,5 @@ if __name__ == '__main__':
 
     # save imposed pdf
     outfn = 'booklet.' + os.path.basename(infile)
-    print("Imposed PDF file saved to {}".format(outfn))
     PdfWriter().addpages(outpages).write(outfn)
+    print("Imposed PDF file saved to {}".format(outfn))
