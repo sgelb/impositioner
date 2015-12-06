@@ -50,13 +50,18 @@ units = {
     }
 
 
+def reverseRemainder(dividend, divisor):
+    reverseRemainder = 0
+    if dividend % divisor:
+        reverseRemainder = divisor - dividend % divisor
+    return reverseRemainder
+
+
 def calculateSignatureLength(pageCount):
     # return pageCount as signatureLength if pageCount too low
     if pageCount <= 36:
         # make sure that pageCount is a multiple of 4
-        if pageCount % 4:
-            pageCount += 4 - pageCount % 4
-        return pageCount
+        return pageCount + reverseRemainder(pageCount, 4)
 
     # calculate signature length with fewest additional blank pages. possible
     # signature lengths are 20, 24, 28, 32 and 36
@@ -64,8 +69,9 @@ def calculateSignatureLength(pageCount):
     remainder = sys.maxsize
 
     for length in range(16, 36+1, 4):
-        if length - pageCount % length <= remainder:
-            remainder = length - pageCount % length
+        newRemainder = reverseRemainder(pageCount, length)
+        if newRemainder <= remainder:
+            remainder = newRemainder
             signatureLength = length
     return signatureLength
 
@@ -297,10 +303,7 @@ if __name__ == '__main__':
 
     # signatures disabled
     if signatureLength == 0:
-        remainder = 0
-        if pageCount % 4:
-            remainder = 4 - pageCount % 4
-        signatureLength = pageCount + remainder
+        signatureLength = pageCount + reverseRemainder(pageCount, 4)
 
     # signatures is neither manually set nor disabled, calculate length
     if not signatureLength:
