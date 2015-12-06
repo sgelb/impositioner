@@ -21,6 +21,7 @@ import os
 from pdfrw import PdfReader, PdfWriter, PageMerge
 import re
 import sys
+import textwrap
 
 paperformats = {
     'a0': [2384, 3371],
@@ -174,27 +175,51 @@ def isLandscape(page):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
-            description='''
-            Impose PDF file
-            ''')
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        description=textwrap.dedent(
+            '''
+            Impose PDF file for booklet printing
+            '''),
+        epilog=textwrap.dedent(
+            '''
+        Examples:
 
+        Print 4 pages on A4, creating an A6 booklet:
+        $ {0} -n 4 -f a4 input.pdf
+
+        Create booklet with binding on right side and signatures of 20 pages:
+        $ {0} -b right -s 20 input.pdf
+
+        Create booklet with custom output format. Center each page before
+        combining:
+        $ {0} -f 209.5x209.5 input.pdf
+        '''.format(sys.argv[0]))
+    )
+
+    # positional argument
     parser.add_argument('PDF', action='store', help='PDF file')
-    parser.add_argument('-n', dest='nup', action='store', type=int,
-                        default="2", help='Pages per sheet (default: 2)')
+
+    # optional arguments
+    parser.add_argument('-n', dest='nup', metavar='N',
+                        action='store', type=int, default="2",
+                        help='Pages per sheet (default: 2)')
     parser.add_argument('-f', dest='paperformat', action='store',
                         type=str.lower, metavar='FORMAT',
-                        help='Output paper format. Must be standard '
-                        'paper format (A4, letter, ...) or WIDTHxHEIGHT '
-                        '(default: auto)')
+                        help='Output paper format. Must be standard'
+                        ' paper format (A4, letter, ...) or custom'
+                        ' WIDTHxHEIGHT (default: auto)')
     parser.add_argument('-u', dest='unit', action='store',
                         default='mm', choices=['cm', 'inch', 'mm'],
-                        help='Unit for custom output format (default: mm)')
+                        help='Unit if using -f with custom format'
+                        ' (default: mm)')
     parser.add_argument('-b', dest='binding', action='store', type=str.lower,
                         choices=['left', 'top', 'right', 'bottom'],
                         default='left',
                         help='Side of binding (default: left)')
     parser.add_argument('-c', dest='centerSubpage', action='store_true',
-                        help='Center each page when resizing')
+                        help='Center each page when resizing. Has no effect if'
+                        ' output format is multiple of input format (default:'
+                        ' center combinated pages)')
     parser.add_argument('-s', dest='signatureLength', action='store', type=int,
                         help='Signature length (default: auto)')
     args = parser.parse_args()

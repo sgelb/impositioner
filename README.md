@@ -1,58 +1,60 @@
-## Impositioner
+## impositioner
 
-Basic imposition of PDF files
+A simple script for impositioning PDF files for booklet printing.
 
 ### Features
 
 - simple to print and sort
-- automatic or manual setting of signature length
-- n-up imposition, e.g for printing an A6 booklet on A4 paper
+- automatically or manually setting of signatures
+- N-up printing of multiple sheets on a page
+- binding on any side
+- option to set output size
 
-### Usage
+### Options
 
-```
-usage: impositioner.py [-h] [-n NUP] [-f FORMAT] [-u {cm,inch,mm}]
-                       [-b {left,top}] [-c] [-s SIGNATURELENGTH]
+```sh
+usage: impositioner.py [-h] [-n N] [-f FORMAT] [-u {cm,inch,mm}]
+                       [-b {left,top,right,bottom}] [-c] [-s SIGNATURELENGTH]
                        PDF
 
-Impose PDF file
+Impose PDF file for booklet printing
 
 positional arguments:
-  PDF                 PDF file
+  PDF                   PDF file
 
 optional arguments:
-  -h, --help          show this help message and exit
-  -n NUP              Pages per sheet (default: 2)
-  -f FORMAT           Output paper format. Must be standard paper format (A4,
-                      letter, ...) or WIDTHxHEIGHT (default: auto)
-  -u {cm,inch,mm}     Unit for custom output format (default: mm)
-  -b {left,top}       Side of binding (default: left)
-  -c                  Center each page when resizing
-  -s SIGNATURELENGTH  Signature length (default: auto)
+  -h, --help            show this help message and exit
+  -n N                  Pages per sheet (default: 2)
+  -f FORMAT             Output paper format. Must be standard paper format
+                        (A4, letter, ...) or custom WIDTHxHEIGHT (default:
+                        auto)
+  -u {cm,inch,mm}       Unit if using -f with custom format (default: mm)
+  -b {left,top,right,bottom}
+                        Side of binding (default: left)
+  -c                    Center each page when resizing. Has no effect if
+                        output format is multiple of input format (default:
+                        center combinated pages)
+  -s SIGNATURELENGTH    Signature length (default: auto)
+
+Examples:
+
+Print 4 pages on A4, creating an A6 booklet:
+$ ./impositioner.py -n 4 -f a4 input.pdf
+
+Create booklet with binding on right side and signatures of 20 pages:
+$ ./impositioner.py -b right -s 20 input.pdf
+
+Create booklet with custom output format. Center each page before
+combining:
+$ ./impositioner.py -f 209.5x209.5 input.pdf
 ```
 
-### Todo
 
-- [x] basic imposing
-- [x] signatures
-- [x] set output size
-  - [x] standard papersizes: A0 - A8, letter, ...
-  - [x] scaling
-  - [x] scale and center each single page instead of result. make it an option
-- [x] support for landscape input
-- [x] add license
-- [x] option for setting binding side (left, top, right, bottom)
-- [x] custom output size
-- [ ] custom layout, e.g. 2x3
-- [ ] more usage infos, explanation of cli options, examples and illustrated help for folding/cutting
-- [ ] add front- and/or backcover from extra pdf file
-- [ ] add blank pages for easy separation of signatures after printing
-- [ ] check for correct bookbinding terms: section/signature, page/sheet/leaf, etc
+### Printing
 
+This depends on your printer. This is how I print on my Samsung printer without
+duplex function:
 
-### Maybe
-
-- [ ] better name
-- [ ] double/parallel print
-- [ ] add cut line
-- [ ] creep/shingling/push out
+1. Print all odd pages.
+2. Put printed pages back. I have to rotate them 180°.
+3. Print all even pages in reversed order.
