@@ -34,7 +34,8 @@ optional arguments:
   -c                    Center each page when resizing. Has no effect if
                         output format is multiple of input format (default:
                         center combinated pages)
-  -s SIGNATURELENGTH    Signature length (default: auto)
+  -s SIGNATURELENGTH    Signature length. Set to 0 to disable signatures
+                        (default: auto)
 
 Examples:
 

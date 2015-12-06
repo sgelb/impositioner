@@ -240,7 +240,8 @@ if __name__ == '__main__':
                         ' output format is multiple of input format (default:'
                         ' center combinated pages)')
     parser.add_argument('-s', dest='signatureLength', action='store', type=int,
-                        help='Signature length (default: auto)')
+                        help='Signature length. Set to 0 to disable signatures'
+                        ' (default: auto)')
     args = parser.parse_args()
 
     # validate infile argument
@@ -293,6 +294,15 @@ if __name__ == '__main__':
 
     # calculate some variables
     pageCount = len(inpages)
+
+    # signatures disabled
+    if signatureLength == 0:
+        remainder = 0
+        if pageCount % 4:
+            remainder = 4 - pageCount % 4
+        signatureLength = pageCount + remainder
+
+    # signatures is neither manually set nor disabled, calculate length
     if not signatureLength:
         signatureLength = calculateSignatureLength(pageCount)
     signatureCount = math.ceil(pageCount / signatureLength)
