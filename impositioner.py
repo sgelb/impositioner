@@ -124,6 +124,7 @@ def merge(pages, rotation, binding):
 def createBlankCopy(page):
     blankPage = PageMerge()
     blankPage.mbox = page.MediaBox
+    blankPage.rotate = page.Rotate
     return blankPage.render()
 
 
@@ -248,6 +249,10 @@ if __name__ == '__main__':
     parser.add_argument('-s', dest='signatureLength', action='store', type=int,
                         help='Signature length. Set to 0 to disable signatures'
                         ' (default: auto)')
+    parser.add_argument('-d', dest='divider', action='store_true',
+                        default=False,
+                        help='Insert blank pages between signature stacks to'
+                        ' ease separation')
     args = parser.parse_args()
 
     # validate infile argument
@@ -336,6 +341,15 @@ if __name__ == '__main__':
 
         # impose each signature
         outpages.extend(impose(signature, pagesPerSheet, args.binding))
+
+        # add divider pages
+        if args.divider:
+            outpages.append(createBlankCopy(outpages[0]))
+            outpages.append(createBlankCopy(outpages[0]))
+
+    # remove divider pages at end
+    if args.divider:
+        del outpages[-2:]
 
     # resize result
     if papersize:

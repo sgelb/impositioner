@@ -36,6 +36,8 @@ optional arguments:
                         center combinated pages)
   -s SIGNATURELENGTH    Signature length. Set to 0 to disable signatures
                         (default: auto)
+  -d                    Insert blank pages between signature stacks to ease
+                        separation
 
 Examples:
 
