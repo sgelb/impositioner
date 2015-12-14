@@ -356,6 +356,11 @@ if __name__ == '__main__':
         outpages = resize(outpages, papersize)
 
     # save imposed pdf
+    trailer = PdfReader(infile)
     outfn = 'booklet.' + os.path.basename(infile)
-    PdfWriter().addpages(outpages).write(outfn)
+    writer = PdfWriter()
+    writer.addpages(outpages)
+    writer.trailer.Info = trailer.Info
+    writer.trailer.Info.Producer = "https://github.com/sgelb/impositioner"
+    writer.write(outfn)
     print("Imposed PDF file saved to {}".format(outfn))
