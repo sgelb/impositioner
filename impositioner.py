@@ -50,46 +50,47 @@ units = {
     }
 
 
-def reverseRemainder(dividend, divisor):
-    reverseRemainder = 0
+# TODO: catch zero_division_error
+def reverse_remainder(dividend, divisor):
+    reverse_remainder = 0
     if dividend % divisor:
-        reverseRemainder = divisor - dividend % divisor
-    return reverseRemainder
+        reverse_remainder = divisor - dividend % divisor
+    return reverse_remainder
 
 
-def calculateSignatureLength(pageCount):
-    # return pageCount as signatureLength if pageCount too low
-    if pageCount <= 36:
-        # make sure that pageCount is a multiple of 4
-        return pageCount + reverseRemainder(pageCount, 4)
+def calculate_signature_length(page_count):
+    # return page_count as signature_length if page_count too low
+    if page_count <= 36:
+        # make sure that page_count is a multiple of 4
+        return page_count + reverse_remainder(page_count, 4)
 
     # calculate signature length with fewest additional blank pages. possible
     # signature lengths are 20, 24, 28, 32 and 36
-    signatureLength = pageCount
+    signature_length = page_count
     remainder = sys.maxsize
 
     for length in range(16, 36+1, 4):
-        newRemainder = reverseRemainder(pageCount, length)
-        if newRemainder <= remainder:
-            remainder = newRemainder
-            signatureLength = length
-    return signatureLength
+        new_remainder = reverse_remainder(page_count, length)
+        if new_remainder <= remainder:
+            remainder = new_remainder
+            signature_length = length
+    return signature_length
 
 
-def getSignaturePages(inpages, signatureLength):
+def cut_in_signatures(inpages, signature_length):
     signatures = []
-    for i in range(0, len(inpages), signatureLength):
-        signatures.append(inpages[i:i+signatureLength])
+    for i in range(0, len(inpages), signature_length):
+        signatures.append(inpages[i:i+signature_length])
     return signatures
 
 
-def impose(pages, pagesPerSheet, binding):
-    if pagesPerSheet == 1:
+def impose(pages, pages_per_sheet, binding):
+    if pages_per_sheet == 1:
         return pages
 
     npages = []
     half = len(pages) // 2
-    rotation = 90 if math.log2(pagesPerSheet) % 2 else 270
+    rotation = 90 if math.log2(pages_per_sheet) % 2 else 270
     for i in range(0, half, 2):
         # frontside
         npages.append(merge((pages[half+i], pages[i]), rotation, binding))
@@ -97,23 +98,23 @@ def impose(pages, pagesPerSheet, binding):
         npages.append(merge((pages[i+1], pages[half+i+1]),
                             (rotation+180) % 360, binding))
 
-    return impose(npages, pagesPerSheet // 2, binding)
+    return impose(npages, pages_per_sheet // 2, binding)
 
 
 def merge(pages, rotation, binding):
     result = PageMerge() + (page for page in pages)
     if binding == "left":
         result[-1].x += result[0].w
-        result.rotate = rotation if isLandscape(result) else 0
+        result.rotate = rotation if is_landscape(result) else 0
     elif binding == "top":
         result[0].y += result[0].h
-        result.rotate = rotation if not isLandscape(result) else 0
+        result.rotate = rotation if not is_landscape(result) else 0
     elif binding == "right":
         result[0].x += result[0].w
-        result.rotate = rotation if isLandscape(result) else 0
+        result.rotate = rotation if is_landscape(result) else 0
     elif binding == "bottom":
         result[-1].y += result[0].h
-        result.rotate = rotation if not isLandscape(result) else 0
+        result.rotate = rotation if not is_landscape(result) else 0
     else:
         print("Unknown binding", binding)
         sys.exit(1)
@@ -121,72 +122,85 @@ def merge(pages, rotation, binding):
     return result.render()
 
 
-def createBlankCopy(page):
-    blankPage = PageMerge()
-    blankPage.mbox = page.MediaBox
-    blankPage.rotate = page.Rotate
-    return blankPage.render()
+def create_blank_copy(page):
+    blank_page = PageMerge()
+    blank_page.mbox = page.media_box
+    blank_page.rotate = page.Rotate
+    return blank_page.render()
 
 
-def calculateScaledSubPageSize(pagesPerSheet, papersize):
+def calculate_scaled_sub_page_size(pages_per_sheet, papersize):
     # return [w, h] of subpage scaled according to final output size
-    if pagesPerSheet == 2:
+    if pages_per_sheet == 2:
         # columns = 2, rows = 1
         return [round(papersize[1] / 2), round(papersize[0])]
 
-    square = math.sqrt(pagesPerSheet)
+    square = math.sqrt(pages_per_sheet)
     if square.is_integer():
         # columns = rows = square, divide width and height by square
         return [round(papersize[0] / square), round(papersize[1] / square)]
     else:
         # columns is first multiple of 2 lesser than square
         columns = square - square % 2
-        rows = pagesPerSheet / columns
+        rows = pages_per_sheet / columns
         return [round(papersize[0] / columns), round(papersize[1] / rows)]
 
 
-def addBlanks(signature, pagesPerSheet):
-    remainder = len(signature) % (2 * pagesPerSheet)
+def add_blanks(signature, pages_per_sheet):
+    remainder = len(signature) % (2 * pages_per_sheet)
     if remainder:
-        blankPagesCount = ((2 * pagesPerSheet) - remainder)
-        blankPage = createBlankCopy(signature[0])
-        blankPages = ([blankPage] * (blankPagesCount // 2))
+        blank_pages_count = ((2 * pages_per_sheet) - remainder)
+        blank_page = create_blank_copy(signature[0])
+        blank_pages = ([blank_page] * (blank_pages_count // 2))
         # add blanks as pairs of front- and backsides
-        signature[len(signature)//2:len(signature)//2] = blankPages
-        signature.extend(blankPages)
+        signature[len(signature)//2:len(signature)//2] = blank_pages
+        signature.extend(blank_pages)
 
     return signature
 
 
-def resize(outpages, outputSize):
-    currentSize = [int(float(value)) for value in outpages[0].MediaBox[-2:]]
+def get_media_box_size(outpages):
+    current_size = [int(float(value)) for value in outpages[0].media_box[-2:]]
 
     if outpages[0].Rotate in (90, 270):
         # at this point, rotation is not "hardcoded" into the dimensions, but
         # just noted. if the noted rotation would result in a different page
         # orientation, we switch values
-        currentSize = list(reversed(currentSize))
+        current_size = list(reversed(current_size))
 
-    # rotate outputSize if outpages would fit better
-    outRatio = outputSize[0] / outputSize[1]
-    curRatio = currentSize[0] / currentSize[1]
-    if (outRatio > 1 and curRatio <= 1) or (outRatio <= 1 and curRatio > 1):
-        outputSize = list(reversed(outputSize))
+    return current_size
 
-    scale = min(outputSize[0] / currentSize[0], outputSize[1] / currentSize[1])
-    xMargin = round(0.5 * (outputSize[0] - scale * currentSize[0]))
-    yMargin = round(0.5 * (outputSize[1] - scale * currentSize[1]))
+
+def calculate_margins(output_size, current_size):
+    scale = min(output_size[0] / current_size[0],
+                output_size[1] / current_size[1])
+    x_margin = round(0.5 * (output_size[0] - scale * current_size[0]))
+    y_margin = round(0.5 * (output_size[1] - scale * current_size[1]))
+    return scale, x_margin, y_margin
+
+
+# TODO: refactor calculation of scale, x_margin and y_margin in own function
+def resize(outpages, output_size):
+    current_size = get_media_box_size(outpages)
+
+    # rotate output_size if outpages would fit better
+    out_ratio = output_size[0] / output_size[1]
+    cur_ratio = current_size[0] / current_size[1]
+    if out_ratio > 1 and cur_ratio <= 1 or out_ratio <= 1 and cur_ratio > 1:
+        output_size = list(reversed(output_size))
+
+    scale, x_margin, y_margin = calculate_margins(output_size, current_size)
 
     for idx, page in enumerate(outpages):
         page = PageMerge().add(page)
 
         # scale page
         page[0].scale(scale)
-        page[0].x += xMargin
-        page[0].y += yMargin
+        page[0].x += x_margin
+        page[0].y += y_margin
 
         # set new mediabox size
-        page.mbox = [0, 0] + outputSize
+        page.mbox = [0, 0] + output_size
 
         # replace original with resized page
         outpages[idx] = page.render()
@@ -194,13 +208,14 @@ def resize(outpages, outputSize):
     return outpages
 
 
-def isLandscape(page):
+def is_landscape(page):
     dim = page.xobj_box[2:]
     return dim[0] > dim[1]
 
 
-if __name__ == '__main__':
+def parse_arguments():
     parser = argparse.ArgumentParser(
+        prog='impositioner',
         formatter_class=argparse.RawDescriptionHelpFormatter,
         description=textwrap.dedent(
             '''
@@ -210,16 +225,16 @@ if __name__ == '__main__':
             '''
         Examples:
 
-        Print 4 pages on A4, creating an A6 booklet:
-        $ {0} -n 4 -f a4 input.pdf
+        Print 4 pages on an A4 sheet for creating an A6 booklet:
+        $ %(prog)s -n 4 -f a4 input.pdf
 
         Create booklet with binding on right side and signatures of 20 pages:
-        $ {0} -b right -s 20 input.pdf
+        $ %(prog)s -b right -s 20 input.pdf
 
         Create booklet with custom output format. Center each page before
         combining:
-        $ {0} -f 209.5x209.5 input.pdf
-        '''.format(sys.argv[0]))
+        $ %(prog)s -f 209.5x209.5 input.pdf
+        '''),
     )
 
     # positional argument
@@ -231,9 +246,9 @@ if __name__ == '__main__':
                         help='Pages per sheet (default: 2)')
     parser.add_argument('-f', dest='paperformat', action='store',
                         type=str.lower, metavar='FORMAT',
-                        help='Output paper format. Must be standard'
+                        help='Output paper sheet format. Must be standard'
                         ' paper format (A4, letter, ...) or custom'
-                        ' WIDTHxHEIGHT (default: auto)')
+                        ' WIDTHx_hEIGHT (default: auto)')
     parser.add_argument('-u', dest='unit', action='store',
                         default='mm', choices=['cm', 'inch', 'mm'],
                         help='Unit if using -f with custom format'
@@ -242,110 +257,157 @@ if __name__ == '__main__':
                         choices=['left', 'top', 'right', 'bottom'],
                         default='left',
                         help='Side of binding (default: left)')
-    parser.add_argument('-c', dest='centerSubpage', action='store_true',
+    parser.add_argument('-c', dest='center_subpage', action='store_true',
                         help='Center each page when resizing. Has no effect if'
                         ' output format is multiple of input format (default:'
                         ' center combinated pages)')
-    parser.add_argument('-s', dest='signatureLength', action='store', type=int,
+    parser.add_argument('-s', dest='signature_length', action='store',
+                        type=int,
                         help='Signature length. Set to 0 to disable signatures'
                         ' (default: auto)')
     parser.add_argument('-d', dest='divider', action='store_true',
                         default=False,
-                        help='Insert blank pages between signature stacks to'
-                        ' ease separation')
-    args = parser.parse_args()
+                        help='Insert blank sheets between signature stacks to'
+                        ' ease separation after printing')
+    parser.add_argument('-v', dest='verbose', action='store_true',
+                        default=False,
+                        help='Verbose output')
+    return parser.parse_args()
 
-    # validate infile argument
-    infile = os.path.abspath(args.PDF)
+
+def read_pdf(infile):
+    return PdfReader(infile).pages
+
+
+def validate_infile(pdf):
+    infile = os.path.abspath(pdf)
     if not os.path.exists(infile):
         print("File does not exist: {}".format(infile))
         sys.exit(1)
+    return infile
 
-    # validate paperformat
+
+def validate_papersize(paperformat, unit):
     papersize = None
-    if args.paperformat:
+    if paperformat:
         # standard format
-        if args.paperformat in paperformats:
-            papersize = paperformats[args.paperformat]
+        if paperformat in paperformats:
+            papersize = paperformats[paperformat]
 
         # custom format
         if not papersize:
-            # floatXfloat
+            # float_xfloat
             pattern = re.compile('^([0-9]*\.?[0-9]+)x([0-9]*\.?[0-9]+)$', re.I)
-            match = re.match(pattern, args.paperformat)
+            match = re.match(pattern, paperformat)
             if match:
-                papersize = [round(units[args.unit] * float(match.group(1))),
-                             round(units[args.unit] * float(match.group(2)))]
+                papersize = [round(units[unit] * float(match.group(1))),
+                             round(units[unit] * float(match.group(2)))]
         # invalid input
         if not papersize:
+            # FIXME: print error on stderr
             print("Unknown paper format: {}. Must be WIDTHxHEIGHT (e.g 4.3x11)"
                   " or one of the following standard formats: {}".format(
-                    args.paperformat, ', '.join(sorted(paperformats.keys()))))
+                    paperformat, ', '.join(sorted(paperformats.keys()))))
             sys.exit(1)
 
+    return papersize
+
+
+def validate_pages_per_sheet(pages_per_sheet):
     # validate nup
-    pagesPerSheet = args.nup
-    if pagesPerSheet < 2:
+    if pages_per_sheet < 2:
+        # FIXME: print error on stderr
         print("Pages per sheet must be a greater than 1, is {}".format(
-              pagesPerSheet))
+              pages_per_sheet))
         sys.exit(1)
-    if not math.log2(pagesPerSheet).is_integer():
+    if not math.log2(pages_per_sheet).is_integer():
+        # FIXME: print error on stderr
         print("Pages per sheet must be a power of 2, is {}".format(
-              pagesPerSheet))
+              pages_per_sheet))
         sys.exit(1)
 
-    # validate signatureLength argument
-    signatureLength = args.signatureLength
-    if signatureLength and signatureLength % 4:
+    return pages_per_sheet
+
+
+def validate_signature_length(signature_length):
+    # validate signature_length argument
+    if signature_length and signature_length % 4:
         print("Signature length must be multiple of 4!")
         sys.exit(1)
+    return signature_length
+
+
+def create_filename(infile):
+    return 'booklet.' + os.path.basename(infile)
+
+
+def save_pdf(infile, outpages):
+    trailer = PdfReader(infile)
+    outfn = create_filename(infile)
+    writer = PdfWriter()
+    writer.addpages(outpages)
+    writer.trailer.Info = trailer.Info
+    writer.trailer.Info.Producer = "https://github.com/sgelb/impositioner"
+    writer.write(outfn)
+
+
+def main():
+    args = parse_arguments()
+
+    # validate cli arguments
+    infile = validate_infile(args.PDF)
+    signature_length = validate_signature_length(args.signature_length)
+    papersize = validate_papersize(args.paperformat, args.unit)
+    pages_per_sheet = validate_pages_per_sheet(args.nup)
 
     # read pdf file
     inpages = PdfReader(infile).pages
 
     # calculate some variables
-    pageCount = len(inpages)
+    page_count = len(inpages)
 
-    # signatures disabled
-    if signatureLength == 0:
-        signatureLength = pageCount + reverseRemainder(pageCount, 4)
+    # signatures are disabled
+    if not signature_length:
+        signature_length = page_count + reverse_remainder(page_count, 4)
 
-    # signatures is neither manually set nor disabled, calculate length
-    if not signatureLength:
-        signatureLength = calculateSignatureLength(pageCount)
-    signatureCount = math.ceil(pageCount / signatureLength)
+    # signature_length is neither manually set nor disabled, calculate length
+    if not signature_length:
+        signature_length = calculate_signature_length(page_count)
+
+    signature_count = math.ceil(page_count / signature_length)
 
     # add blank pages
-    blankPagesCount = signatureLength * signatureCount - pageCount
-    if blankPagesCount:
-        inpages.extend([createBlankCopy(inpages[0])] * blankPagesCount)
+    blank_pages_count = signature_length * signature_count - page_count
+    if blank_pages_count:
+        inpages.extend([create_blank_copy(inpages[0])] * blank_pages_count)
 
     # calculate output size of single page for centering content
-    if papersize and args.centerSubpage:
-        outputSize = calculateScaledSubPageSize(pagesPerSheet, papersize)
+    if papersize and args.center_subpage:
+        output_size = calculate_scaled_sub_page_size(
+            pages_per_sheet, papersize)
 
-    # impose
+    # start impositioning
     outpages = []
     # split pages in signatures
-    for signature in getSignaturePages(inpages, signatureLength):
+    for signature in cut_in_signatures(inpages, signature_length):
         # reverse second half of signature to simplify imposition
         signature[len(signature)//2:] = list(
                 reversed(signature[len(signature)//2:]))
 
         # add blank pages
-        signature = addBlanks(signature, pagesPerSheet)
+        signature = add_blanks(signature, pages_per_sheet)
 
         # resize pages before merging
-        if papersize and args.centerSubpage:
-            signature = resize(signature, outputSize)
+        if papersize and args.center_subpage:
+            signature = resize(signature, output_size)
 
         # impose each signature
-        outpages.extend(impose(signature, pagesPerSheet, args.binding))
+        outpages.extend(impose(signature, pages_per_sheet, args.binding))
 
         # add divider pages
         if args.divider:
-            outpages.append(createBlankCopy(outpages[0]))
-            outpages.append(createBlankCopy(outpages[0]))
+            outpages.append(create_blank_copy(outpages[0]))
+            outpages.append(create_blank_copy(outpages[0]))
 
     # remove divider pages at end
     if args.divider:
@@ -355,12 +417,30 @@ if __name__ == '__main__':
     if papersize:
         outpages = resize(outpages, papersize)
 
+    # print infos
+    if args.verbose:
+        for line in textwrap.wrap(
+            "Standard paper formats: {}".format(
+                ', '.join(sorted(paperformats.keys()))), 80):
+            print(line)
+        print("Total input page:  {:>3}".format(page_count))
+        print("Total output page: {:>3}".format(len(outpages)))
+
+        input_size = inpages[0].media_box[2:]
+        output_size = outpages[0].media_box[2:]
+        print("Input size:        {}x{}".format(input_size[0], input_size[1]))
+        print("Output size:       {}x{}".format(int(output_size[0]),
+                                                int(output_size[1])))
+
+        print("Signature length:  {:>3}".format(signature_length))
+        print("Signature count:   {:>3}".format(signature_count))
+        divider_count = 2*signature_count - 2 if args.divider else 0
+        print("Divider pages:     {:>3}".format(divider_count))
+
     # save imposed pdf
-    trailer = PdfReader(infile)
-    outfn = 'booklet.' + os.path.basename(infile)
-    writer = PdfWriter()
-    writer.addpages(outpages)
-    writer.trailer.Info = trailer.Info
-    writer.trailer.Info.Producer = "https://github.com/sgelb/impositioner"
-    writer.write(outfn)
-    print("Imposed PDF file saved to {}".format(outfn))
+    save_pdf(infile, outpages)
+    print("Imposed PDF file saved to {}".format(create_filename(infile)))
+
+
+if __name__ == '__main__':
+    main()
