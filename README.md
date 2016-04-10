@@ -6,7 +6,7 @@ A simple script for impositioning PDF files for booklet printing.
 
 - simple to print and sort
 - automatically or manually setting of signatures
-- N-up printing of multiple sheets on a page
+- N-up printing of multiple pages on a sheet
 - binding on any side
 - option to set output size
 
