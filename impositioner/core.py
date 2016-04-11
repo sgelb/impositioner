@@ -124,7 +124,7 @@ def merge(pages, rotation, binding):
 
 def create_blank_copy(page):
     blank_page = PageMerge()
-    blank_page.mbox = page.media_box
+    blank_page.mbox = page.MediaBox
     blank_page.rotate = page.Rotate
     return blank_page.render()
 
