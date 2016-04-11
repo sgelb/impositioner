@@ -50,7 +50,6 @@ units = {
     }
 
 
-# TODO: catch zero_division_error
 def reverse_remainder(dividend, divisor):
     reverse_remainder = 0
     if dividend % divisor:
@@ -88,17 +87,17 @@ def impose(pages, pages_per_sheet, binding):
     if pages_per_sheet == 1:
         return pages
 
-    npages = []
+    sheets = []
     half = len(pages) // 2
     rotation = 90 if math.log2(pages_per_sheet) % 2 else 270
     for i in range(0, half, 2):
         # frontside
-        npages.append(merge((pages[half+i], pages[i]), rotation, binding))
+        sheets.append(merge((pages[half+i], pages[i]), rotation, binding))
         # backside
-        npages.append(merge((pages[i+1], pages[half+i+1]),
+        sheets.append(merge((pages[i+1], pages[half+i+1]),
                             (rotation+180) % 360, binding))
 
-    return impose(npages, pages_per_sheet // 2, binding)
+    return impose(sheets, pages_per_sheet // 2, binding)
 
 
 def merge(pages, rotation, binding):
