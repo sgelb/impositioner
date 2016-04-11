@@ -77,10 +77,8 @@ def calculate_signature_length(page_count):
 
 
 def cut_in_signatures(inpages, signature_length):
-    signatures = []
     for i in range(0, len(inpages), signature_length):
-        signatures.append(inpages[i:i+signature_length])
-    return signatures
+        yield inpages[i:i+signature_length]
 
 
 def impose(pages, pages_per_sheet, binding):
@@ -386,7 +384,7 @@ def main():
             pages_per_sheet, papersize)
 
     # start impositioning
-    outpages = []
+    sheets = []
     # split pages in signatures
     for signature in cut_in_signatures(inpages, signature_length):
         # reverse second half of signature to simplify imposition
@@ -401,20 +399,20 @@ def main():
             signature = resize(signature, output_size)
 
         # impose each signature
-        outpages.extend(impose(signature, pages_per_sheet, args.binding))
+        sheets.extend(impose(signature, pages_per_sheet, args.binding))
 
         # add divider pages
         if args.divider:
-            outpages.append(create_blank_copy(outpages[0]))
-            outpages.append(create_blank_copy(outpages[0]))
+            sheets.append(create_blank_copy(sheets[0]))
+            sheets.append(create_blank_copy(sheets[0]))
 
     # remove divider pages at end
     if args.divider:
-        del outpages[-2:]
+        del sheets[-2:]
 
     # resize result
     if papersize:
-        outpages = resize(outpages, papersize)
+        sheets = resize(sheets, papersize)
 
     # print infos
     if args.verbose:
@@ -423,10 +421,10 @@ def main():
                 ', '.join(sorted(paperformats.keys()))), 80):
             print(line)
         print("Total input page:  {:>3}".format(page_count))
-        print("Total output page: {:>3}".format(len(outpages)))
+        print("Total output page: {:>3}".format(len(sheets)))
 
         input_size = inpages[0].media_box[2:]
-        output_size = outpages[0].media_box[2:]
+        output_size = sheets[0].media_box[2:]
         print("Input size:        {}x{}".format(input_size[0], input_size[1]))
         print("Output size:       {}x{}".format(int(output_size[0]),
                                                 int(output_size[1])))
@@ -437,7 +435,7 @@ def main():
         print("Divider pages:     {:>3}".format(divider_count))
 
     # save imposed pdf
-    save_pdf(infile, outpages)
+    save_pdf(infile, sheets)
     print("Imposed PDF file saved to {}".format(create_filename(infile)))
 
 
