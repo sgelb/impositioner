@@ -1,8 +1,12 @@
+# Project files
 *.pdf
+TODO.md
+
+# Python files
 *.pyc
 __pycache__
 .cache
 .coverage
 *.egg-info
 .venv/
-TODO.md
+.eggs
