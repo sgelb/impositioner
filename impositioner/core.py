@@ -146,15 +146,16 @@ def calculate_scaled_sub_page_size(pages_per_sheet, papersize):
 
 def add_blanks(signature, pages_per_sheet):
     remainder = len(signature) % (2 * pages_per_sheet)
+    s = list(signature)
     if remainder:
         blank_pages_count = (2 * pages_per_sheet) - remainder
         blank_page = create_blank_copy(signature[0])
         blank_pages = ([blank_page] * (blank_pages_count // 2))
         # add blanks as pairs of front- and backsides
-        signature[len(signature)//2:len(signature)//2] = blank_pages
-        signature.extend(blank_pages)
+        s[len(signature)//2:len(signature)//2] = blank_pages
+        s.extend(blank_pages)
 
-    return signature
+    return s
 
 
 def get_media_box_size(outpages):
@@ -180,6 +181,7 @@ def calculate_margins(output_size, current_size):
 # TODO: refactor calculation of scale, x_margin and y_margin in own function
 def resize(outpages, output_size):
     current_size = get_media_box_size(outpages)
+    o = list(outpages)
 
     # rotate output_size if outpages would fit better
     out_ratio = output_size[0] / output_size[1]
@@ -201,9 +203,9 @@ def resize(outpages, output_size):
         page.mbox = [0, 0] + output_size
 
         # replace original with resized page
-        outpages[idx] = page.render()
+        o[idx] = page.render()
 
-    return outpages
+    return o
 
 
 def is_landscape(page):
