@@ -19,7 +19,7 @@ setup(
     install_requires=[
         "pdfrw>=0.2",
     ],
-    tests_require=['pytest'],
+    tests_require=['pytest', 'pytest-cov'],
     entry_points={
         'console_scripts': [
             'impositioner = impositioner.cli:main',

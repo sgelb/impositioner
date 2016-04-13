@@ -2,5 +2,5 @@ init:
 	    pip install -r requirements.txt
 
 test:
-	    py.test tests
+			${VIRTUAL_ENV}/bin/py.test -v --cov-report term-missing --cov=impositioner
 
