@@ -2,4 +2,4 @@ import sys
 import os
 sys.path.insert(0, os.path.abspath('..'))
 
-import impositioner
+import impositioner.core as core

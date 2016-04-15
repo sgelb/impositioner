@@ -22,6 +22,7 @@ from pdfrw import PdfReader, PdfWriter, PageMerge
 import re
 import sys
 import textwrap
+import copy
 
 paperformats = {
     'a0': [2384, 3371],
@@ -99,25 +100,29 @@ def impose(pages, pages_per_sheet, binding):
     return impose(sheets, pages_per_sheet // 2, binding)
 
 
-def merge(pages, rotation, binding):
-    result = PageMerge() + (page for page in pages)
+def set_binding(page, binding, rotation):
     if binding == "left":
-        result[-1].x += result[0].w
-        result.rotate = rotation if is_landscape(result) else 0
+        page[1].x += page[0].w
+        page.rotate = rotation if is_landscape(page) else 0
     elif binding == "top":
-        result[0].y += result[0].h
-        result.rotate = rotation if not is_landscape(result) else 0
+        page[0].y += page[0].h
+        page.rotate = rotation if not is_landscape(page) else 0
     elif binding == "right":
-        result[0].x += result[0].w
-        result.rotate = rotation if is_landscape(result) else 0
+        page[0].x += page[0].w
+        page.rotate = rotation if is_landscape(page) else 0
     elif binding == "bottom":
-        result[-1].y += result[0].h
-        result.rotate = rotation if not is_landscape(result) else 0
+        page[1].y += page[0].h
+        page.rotate = rotation if not is_landscape(page) else 0
     else:
         print("Unknown binding:", binding)
         sys.exit(1)
+    return page
 
-    return result.render()
+
+def merge(pages, rotation, binding):
+    page = PageMerge() + (p for p in pages)
+    page = set_binding(page, binding, rotation)
+    return page.render()
 
 
 def create_blank_copy(page):
@@ -178,7 +183,6 @@ def calculate_margins(output_size, current_size):
     return scale, x_margin, y_margin
 
 
-# TODO: refactor calculation of scale, x_margin and y_margin in own function
 def resize(outpages, output_size):
     current_size = get_media_box_size(outpages)
     o = list(outpages)
