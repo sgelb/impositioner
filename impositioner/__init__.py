@@ -1,2 +1,1 @@
-from impositioner.core import *
 
