@@ -9,7 +9,7 @@ import textwrap
 from pdfrw import PdfReader
 import math
 
-import core
+import impositioner.core as core
 
 
 def parse_arguments():
@@ -89,6 +89,7 @@ def main():
     # calculate some variables
     page_count = len(inpages)
 
+    # calculate signature length
     if signature_length < 0:
         # signatures are disabled, just pad to multiple of 4
         signature_length = page_count + core.reverse_remainder(page_count, 4)
@@ -97,7 +98,7 @@ def main():
 
     signature_count = math.ceil(page_count / signature_length)
 
-    # add blank pages
+    # pad with blank pages
     blank_pages_count = signature_length * signature_count - page_count
     if blank_pages_count:
         inpages.extend(
@@ -110,8 +111,8 @@ def main():
             pages_per_sheet, papersize)
 
     # impose and merge pages, creating sheets
-    sheets = core.imposeAndMerge(inpages, signature_length, pages_per_sheet,
-                                 output_size, args.binding)
+    sheets = core.impose_and_merge(inpages, signature_length, pages_per_sheet,
+                                   output_size, args.binding)
 
     # add divider pages
     if args.divider:
