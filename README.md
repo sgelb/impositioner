@@ -28,7 +28,7 @@ optional arguments:
   -h, --help            show this help message and exit
   -n N                  Pages per sheet (default: 2)
   -f FORMAT             Output paper sheet format. Must be standard paper
-                        format (A4, letter, ...) or custom WIDTHx_hEIGHT
+                        format (A4, letter, ...) or custom WIDTHxHEIGHT
                         (default: auto)
   -u {cm,inch,mm}       Unit if using -f with custom format (default: mm)
   -b {left,top,right,bottom}

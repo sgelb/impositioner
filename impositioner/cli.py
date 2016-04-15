@@ -47,7 +47,7 @@ def parse_arguments():
                         type=str.lower, metavar='FORMAT',
                         help='Output paper sheet format. Must be standard'
                         ' paper format (A4, letter, ...) or custom'
-                        ' WIDTHx_hEIGHT (default: auto)')
+                        ' WIDTHxHEIGHT (default: auto)')
     parser.add_argument('-u', dest='unit', action='store',
                         default='mm', choices=['cm', 'inch', 'mm'],
                         help='Unit if using -f with custom format'
