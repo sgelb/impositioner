@@ -273,7 +273,7 @@ def validate_signature_length(signature_length):
     return signature_length
 
 
-def imposeAndMerge(inpages, signature_length, pages_per_sheet,
+def impose_and_merge(inpages, signature_length, pages_per_sheet,
                    output_size, binding):
     sheets = []
     for signature in cut_in_signatures(inpages, signature_length):
