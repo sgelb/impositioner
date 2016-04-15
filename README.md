@@ -1,4 +1,5 @@
 ## impositioner
+[![Build Status](https://travis-ci.org/sgelb/impositioner.svg?branch=master)](https://travis-ci.org/sgelb/impositioner)
 
 A simple script for impositioning PDF files for booklet printing.
 
@@ -12,10 +13,11 @@ A simple script for impositioning PDF files for booklet printing.
 
 ### Options
 
-```sh
-usage: impositioner.py [-h] [-n N] [-f FORMAT] [-u {cm,inch,mm}]
-                       [-b {left,top,right,bottom}] [-c] [-s SIGNATURELENGTH]
-                       PDF
+```
+usage: impositioner [-h] [-n N] [-f FORMAT] [-u {cm,inch,mm}]
+                    [-b {left,top,right,bottom}] [-c] [-s SIGNATURE_LENGTH]
+                    [-d] [-v]
+                    PDF
 
 Impose PDF file for booklet printing
 
@@ -25,31 +27,31 @@ positional arguments:
 optional arguments:
   -h, --help            show this help message and exit
   -n N                  Pages per sheet (default: 2)
-  -f FORMAT             Output paper format. Must be standard paper format
-                        (A4, letter, ...) or custom WIDTHxHEIGHT (default:
-                        auto)
+  -f FORMAT             Output paper sheet format. Must be standard paper
+                        format (A4, letter, ...) or custom WIDTHx_hEIGHT
+                        (default: auto)
   -u {cm,inch,mm}       Unit if using -f with custom format (default: mm)
   -b {left,top,right,bottom}
                         Side of binding (default: left)
   -c                    Center each page when resizing. Has no effect if
                         output format is multiple of input format (default:
                         center combinated pages)
-  -s SIGNATURELENGTH    Signature length. Set to 0 to disable signatures
+  -s SIGNATURE_LENGTH   Signature length. Set to -1 to disable signatures
                         (default: auto)
-  -d                    Insert blank pages between signature stacks to ease
-                        separation
+  -d                    Insert blank sheets between signature stacks to ease
+                        separation after printing
+  -v                    Verbose output
 
 Examples:
 
-Print 4 pages on A4, creating an A6 booklet:
-$ ./impositioner.py -n 4 -f a4 input.pdf
+Print 4 pages on an A4 sheet for creating an A6 booklet:
+$ impositioner -n 4 -f a4 input.pdf
 
 Create booklet with binding on right side and signatures of 20 pages:
-$ ./impositioner.py -b right -s 20 input.pdf
+$ impositioner -b right -s 20 input.pdf
 
 Create booklet with custom output format. Center each page before
 combining:
-$ ./impositioner.py -f 209.5x209.5 input.pdf
 ```
 
 
