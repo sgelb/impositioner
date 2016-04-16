@@ -7,9 +7,13 @@ with open('README.md') as f:
 with open('LICENSE') as f:
     license = f.read()
 
+version = {}
+with open('impositioner/version.py') as f:
+    exec(f.read(), version)
+
 setup(
     name='impositioner',
-    version='0.0.1',
+    version=version['__version__'],
     description='Impose PDF file for booklet printing',
     long_description=readme,
     author='sgelb',

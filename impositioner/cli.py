@@ -9,7 +9,8 @@ import textwrap
 from pdfrw import PdfReader
 import math
 
-import impositioner.core as core
+from . import core
+from . import __version__
 
 
 def parse_arguments():
@@ -71,6 +72,9 @@ def parse_arguments():
     parser.add_argument('-v', dest='verbose', action='store_true',
                         default=False,
                         help='Verbose output')
+    parser.add_argument('--version', action='version',
+                        version='%(prog)s {}'.format(__version__))
+
     return parser.parse_args()
 
 
