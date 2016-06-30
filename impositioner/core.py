@@ -100,6 +100,12 @@ def impose(pages, pages_per_sheet, binding):
     return impose(sheets, pages_per_sheet // 2, binding)
 
 
+def merge(pages, rotation, binding):
+    page = PageMerge() + (p for p in pages)
+    page = set_binding(page, binding, rotation)
+    return page.render()
+
+
 def set_binding(page, binding, rotation):
     if binding == "left":
         page[1].x += page[0].w
@@ -117,12 +123,6 @@ def set_binding(page, binding, rotation):
         print("Unknown binding:", binding)
         sys.exit(1)
     return page
-
-
-def merge(pages, rotation, binding):
-    page = PageMerge() + (p for p in pages)
-    page = set_binding(page, binding, rotation)
-    return page.render()
 
 
 def create_blank_copy(page):
@@ -266,7 +266,7 @@ def validate_pages_per_sheet(pages_per_sheet):
 
 def validate_signature_length(signature_length):
     # validate signature_length argument
-    if signature_length >= 0 and signature_length % 4:
+    if signature_length > 0 and signature_length % 4:
         print("Signature length must be multiple of 4, is {}".format(
             signature_length))
         sys.exit(1)

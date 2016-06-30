@@ -62,8 +62,8 @@ def parse_arguments():
                         ' output format is multiple of input format (default:'
                         ' center combinated pages)')
     parser.add_argument('-s', dest='signature_length', action='store',
-                        type=int, default=0,
-                        help='Signature length. Set to -1 to disable '
+                        type=int, default=-1,
+                        help='Signature length. Set to 0 to disable '
                         'signatures (default: auto)')
     parser.add_argument('-d', dest='divider', action='store_true',
                         default=False,
@@ -90,14 +90,14 @@ def main():
     # read pdf file
     inpages = PdfReader(infile).pages
 
-    # calculate some variables
     page_count = len(inpages)
 
-    # calculate signature length
-    if signature_length < 0:
+    # calculate signature length, if not set manually through cli argument
+    if signature_length == 0:
         # signatures are disabled, just pad to multiple of 4
         signature_length = page_count + core.reverse_remainder(page_count, 4)
-    else:
+    if signature_length < 0:
+        # calculate signature length
         signature_length = core.calculate_signature_length(page_count)
 
     signature_count = math.ceil(page_count / signature_length)
