@@ -36,7 +36,7 @@ optional arguments:
   -c                    Center each page when resizing. Has no effect if
                         output format is multiple of input format (default:
                         center combinated pages)
-  -s SIGNATURE_LENGTH   Signature length. Set to -1 to disable signatures
+  -s SIGNATURE_LENGTH   Signature length. Set to 0 to disable signatures
                         (default: auto)
   -d                    Insert blank sheets between signature stacks to ease
                         separation after printing
