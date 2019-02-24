@@ -1,6 +1,7 @@
-init:
-	    pip install -r requirements.txt
+run:
+	poetry run impositioner
 
 test:
-	    py.test -v --cov-report term-missing --cov=impositioner
+	poetry run py.test -v --cov-report term-missing --cov=impositioner
 
+.PHONY: init test

@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "impositioner"
+version = "0.1.0"
+description = "Impose PDF file for booklet printing"
+authors = ["sgelb <stephan.halbritter@haw-hamburg.de>"]
+license = "GPL-3.0"
+
+[tool.poetry.dependencies]
+python = "^3.7"
+pdfrw = "^0.4.0"
+
+[tool.poetry.dev-dependencies]
+pytest = "^4.3"
+pytest-cov = "^2.6"
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"
+
+[tool.poetry.scripts]
+impositioner = 'impositioner.cli:main'

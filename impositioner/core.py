@@ -25,30 +25,26 @@ import textwrap
 import copy
 
 paperformats = {
-    'a0': [2384, 3371],
-    'a1': [1685, 2384],
-    'a2': [1190, 1684],
-    'a3': [842, 1190],
-    'a4': [595, 842],
-    'a5': [420, 595],
-    'a6': [298, 420],
-    'a7': [210, 298],
-    'a8': [148, 210],
-    'b4': [729, 1032],
-    'b5': [516, 729],
-    'letter': [612, 792],
-    'legal': [612, 1008],
-    'ledger': [1224, 792],
-    'tabloid': [792, 1224],
-    'executive': [540, 720]
-    }
+    "a0": [2384, 3371],
+    "a1": [1685, 2384],
+    "a2": [1190, 1684],
+    "a3": [842, 1190],
+    "a4": [595, 842],
+    "a5": [420, 595],
+    "a6": [298, 420],
+    "a7": [210, 298],
+    "a8": [148, 210],
+    "b4": [729, 1032],
+    "b5": [516, 729],
+    "letter": [612, 792],
+    "legal": [612, 1008],
+    "ledger": [1224, 792],
+    "tabloid": [792, 1224],
+    "executive": [540, 720],
+}
 
 # dots per unit
-units = {
-    'mm': 2.834,
-    'cm': 28.34,
-    'inch': 72
-    }
+units = {"mm": 2.834, "cm": 28.34, "inch": 72}
 
 
 def reverse_remainder(dividend, divisor):
@@ -70,7 +66,7 @@ def calculate_signature_length(page_count):
     signature_length = page_count
     remainder = sys.maxsize
 
-    for length in range(20, 36+1, 4):
+    for length in range(20, 36 + 1, 4):
         new_remainder = reverse_remainder(page_count, length)
         if new_remainder <= remainder:  # change to < to choose smaller length
             remainder = new_remainder
@@ -80,7 +76,7 @@ def calculate_signature_length(page_count):
 
 def cut_in_signatures(inpages, signature_length):
     for i in range(0, len(inpages), signature_length):
-        yield inpages[i:i+signature_length]
+        yield inpages[i : i + signature_length]
 
 
 def impose(pages, pages_per_sheet, binding):
@@ -92,10 +88,11 @@ def impose(pages, pages_per_sheet, binding):
     rotation = 90 if math.log2(pages_per_sheet) % 2 else 270
     for i in range(0, half, 2):
         # frontside
-        sheets.append(merge((pages[half+i], pages[i]), rotation, binding))
+        sheets.append(merge((pages[half + i], pages[i]), rotation, binding))
         # backside
-        sheets.append(merge((pages[i+1], pages[half+i+1]),
-                            (rotation+180) % 360, binding))
+        sheets.append(
+            merge((pages[i + 1], pages[half + i + 1]), (rotation + 180) % 360, binding)
+        )
 
     return impose(sheets, pages_per_sheet // 2, binding)
 
@@ -155,9 +152,9 @@ def add_blanks(signature, pages_per_sheet):
     if remainder:
         blank_pages_count = (2 * pages_per_sheet) - remainder
         blank_page = create_blank_copy(signature[0])
-        blank_pages = ([blank_page] * (blank_pages_count // 2))
+        blank_pages = [blank_page] * (blank_pages_count // 2)
         # add blanks as pairs of front- and backsides
-        s[len(signature)//2:len(signature)//2] = blank_pages
+        s[len(signature) // 2 : len(signature) // 2] = blank_pages
         s.extend(blank_pages)
 
     return s
@@ -176,8 +173,7 @@ def get_media_box_size(outpages):
 
 
 def calculate_margins(output_size, current_size):
-    scale = min(output_size[0] / current_size[0],
-                output_size[1] / current_size[1])
+    scale = min(output_size[0] / current_size[0], output_size[1] / current_size[1])
     x_margin = round(0.5 * (output_size[0] - scale * current_size[0]))
     y_margin = round(0.5 * (output_size[1] - scale * current_size[1]))
     return scale, x_margin, y_margin
@@ -234,17 +230,22 @@ def validate_papersize(paperformat, unit):
 
         # custom format
         if not papersize:
-            # float_xfloat
-            pattern = re.compile('^([0-9]*\.?[0-9]+)x([0-9]*\.?[0-9]+)$', re.I)
+            # floatxfloat
+            pattern = re.compile(r"^([0-9]*\.?[0-9]+)x([0-9]*\.?[0-9]+)$", re.I)
             match = re.match(pattern, paperformat)
             if match:
-                papersize = [round(units[unit] * float(match.group(1))),
-                             round(units[unit] * float(match.group(2)))]
+                papersize = [
+                    round(units[unit] * float(match.group(1))),
+                    round(units[unit] * float(match.group(2))),
+                ]
         # invalid input
         if not papersize:
-            print("Unknown paper format: {}. Must be WIDTHxHEIGHT (e.g 4.3x11)"
-                  " or one of the following standard formats: {}".format(
-                      paperformat, ', '.join(sorted(paperformats.keys()))))
+            print(
+                "Unknown paper format: {}. Must be WIDTHxHEIGHT (e.g 4.3x11)"
+                " or one of the following standard formats: {}".format(
+                    paperformat, ", ".join(sorted(paperformats.keys()))
+                )
+            )
             sys.exit(1)
 
     return papersize
@@ -253,12 +254,10 @@ def validate_papersize(paperformat, unit):
 def validate_pages_per_sheet(pages_per_sheet):
     # validate nup
     if pages_per_sheet < 2:
-        print("Pages per sheet must be a greater than 1, is {}".format(
-            pages_per_sheet))
+        print("Pages per sheet must be a greater than 1, is {}".format(pages_per_sheet))
         sys.exit(1)
     if not math.log2(pages_per_sheet).is_integer():
-        print("Pages per sheet must be a power of 2, is {}".format(
-            pages_per_sheet))
+        print("Pages per sheet must be a power of 2, is {}".format(pages_per_sheet))
         sys.exit(1)
 
     return pages_per_sheet
@@ -267,19 +266,18 @@ def validate_pages_per_sheet(pages_per_sheet):
 def validate_signature_length(signature_length):
     # validate signature_length argument
     if signature_length > 0 and signature_length % 4:
-        print("Signature length must be multiple of 4, is {}".format(
-            signature_length))
+        print("Signature length must be multiple of 4, is {}".format(signature_length))
         sys.exit(1)
     return signature_length
 
 
-def impose_and_merge(inpages, signature_length, pages_per_sheet,
-                   output_size, binding):
+def impose_and_merge(inpages, signature_length, pages_per_sheet, output_size, binding):
     sheets = []
     for signature in cut_in_signatures(inpages, signature_length):
         # reverse second half of signature to simplify imposition
-        signature[len(signature)//2:] = list(
-                reversed(signature[len(signature)//2:]))
+        signature[len(signature) // 2 :] = list(
+            reversed(signature[len(signature) // 2 :])
+        )
 
         # add blank pages
         signature = add_blanks(signature, pages_per_sheet)
@@ -300,14 +298,14 @@ def impose_and_merge(inpages, signature_length, pages_per_sheet,
 def add_divider(sheets, signature_length):
     s = list(sheets)
     divider = create_blank_copy(sheets[0])
-    for i in range(signature_length//2, len(sheets), signature_length//2):
+    for i in range(signature_length // 2, len(sheets), signature_length // 2):
         s.insert(i, divider)
         s.insert(i, divider)
     return s
 
 
 def create_filename(infile):
-    return 'booklet.' + os.path.basename(infile)
+    return "booklet." + os.path.basename(infile)
 
 
 def save_pdf(infile, outpages):

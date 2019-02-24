@@ -15,14 +15,15 @@ from . import __version__
 
 def parse_arguments():
     parser = argparse.ArgumentParser(
-        prog='impositioner',
+        prog="impositioner",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         description=textwrap.dedent(
-            '''
+            """
             Impose PDF file for booklet printing
-            '''),
+            """
+        ),
         epilog=textwrap.dedent(
-            '''
+            """
         Examples:
 
         Print 4 pages on an A4 sheet for creating an A6 booklet:
@@ -34,46 +35,80 @@ def parse_arguments():
         Create booklet with custom output format. Center each page before
         combining:
         $ %(prog)s -f 209.5x209.5 input.pdf
-        '''),
+        """
+        ),
     )
 
     # positional argument
-    parser.add_argument('PDF', action='store', help='PDF file')
+    parser.add_argument("PDF", action="store", help="PDF file")
 
     # optional arguments
-    parser.add_argument('-n', dest='nup', metavar='N',
-                        action='store', type=int, default="2",
-                        help='Pages per sheet (default: 2)')
-    parser.add_argument('-f', dest='paperformat', action='store',
-                        type=str.lower, metavar='FORMAT',
-                        help='Output paper sheet format. Must be standard'
-                        ' paper format (A4, letter, ...) or custom'
-                        ' WIDTHxHEIGHT (default: auto)')
-    parser.add_argument('-u', dest='unit', action='store',
-                        default='mm', choices=['cm', 'inch', 'mm'],
-                        help='Unit if using -f with custom format'
-                        ' (default: mm)')
-    parser.add_argument('-b', dest='binding', action='store', type=str.lower,
-                        choices=['left', 'top', 'right', 'bottom'],
-                        default='left',
-                        help='Side of binding (default: left)')
-    parser.add_argument('-c', dest='center_subpage', action='store_true',
-                        help='Center each page when resizing. Has no effect if'
-                        ' output format is multiple of input format (default:'
-                        ' center combinated pages)')
-    parser.add_argument('-s', dest='signature_length', action='store',
-                        type=int, default=-1,
-                        help='Signature length. Set to 0 to disable '
-                        'signatures (default: auto)')
-    parser.add_argument('-d', dest='divider', action='store_true',
-                        default=False,
-                        help='Insert blank sheets between signature stacks to'
-                        ' ease separation after printing')
-    parser.add_argument('-v', dest='verbose', action='store_true',
-                        default=False,
-                        help='Verbose output')
-    parser.add_argument('--version', action='version',
-                        version='%(prog)s {}'.format(__version__))
+    parser.add_argument(
+        "-n",
+        dest="nup",
+        metavar="N",
+        action="store",
+        type=int,
+        default="2",
+        help="Pages per sheet (default: 2)",
+    )
+    parser.add_argument(
+        "-f",
+        dest="paperformat",
+        action="store",
+        type=str.lower,
+        metavar="FORMAT",
+        help="Output paper sheet format. Must be standard"
+        " paper format (A4, letter, ...) or custom"
+        " WIDTHxHEIGHT (default: auto)",
+    )
+    parser.add_argument(
+        "-u",
+        dest="unit",
+        action="store",
+        default="mm",
+        choices=["cm", "inch", "mm"],
+        help="Unit if using -f with custom format" " (default: mm)",
+    )
+    parser.add_argument(
+        "-b",
+        dest="binding",
+        action="store",
+        type=str.lower,
+        choices=["left", "top", "right", "bottom"],
+        default="left",
+        help="Side of binding (default: left)",
+    )
+    parser.add_argument(
+        "-c",
+        dest="center_subpage",
+        action="store_true",
+        help="Center each page when resizing. Has no effect if"
+        " output format is multiple of input format (default:"
+        " center combinated pages)",
+    )
+    parser.add_argument(
+        "-s",
+        dest="signature_length",
+        action="store",
+        type=int,
+        default=-1,
+        help="Signature length. Set to 0 to disable " "signatures (default: auto)",
+    )
+    parser.add_argument(
+        "-d",
+        dest="divider",
+        action="store_true",
+        default=False,
+        help="Insert blank sheets between signature stacks to"
+        " ease separation after printing",
+    )
+    parser.add_argument(
+        "-v", dest="verbose", action="store_true", default=False, help="Verbose output"
+    )
+    parser.add_argument(
+        "--version", action="version", version="%(prog)s {}".format(__version__)
+    )
 
     return parser.parse_args()
 
@@ -105,18 +140,17 @@ def main():
     # pad with blank pages
     blank_pages_count = signature_length * signature_count - page_count
     if blank_pages_count:
-        inpages.extend(
-            [core.create_blank_copy(inpages[0])] * blank_pages_count)
+        inpages.extend([core.create_blank_copy(inpages[0])] * blank_pages_count)
 
     # calculate output size of single page for centering content
     output_size = 0
     if papersize and args.center_subpage:
-        output_size = core.calculate_scaled_sub_page_size(
-            pages_per_sheet, papersize)
+        output_size = core.calculate_scaled_sub_page_size(pages_per_sheet, papersize)
 
     # impose and merge pages, creating sheets
-    sheets = core.impose_and_merge(inpages, signature_length, pages_per_sheet,
-                                   output_size, args.binding)
+    sheets = core.impose_and_merge(
+        inpages, signature_length, pages_per_sheet, output_size, args.binding
+    )
 
     # add divider pages
     if args.divider:
@@ -130,7 +164,10 @@ def main():
     if args.verbose:
         for line in textwrap.wrap(
             "Standard paper formats: {}".format(
-                ', '.join(sorted(core.paperformats.keys()))), 80):
+                ", ".join(sorted(core.paperformats.keys()))
+            ),
+            80,
+        ):
             print(line)
         print("Total input page:  {:>3}".format(page_count))
         print("Total output page: {:>3}".format(len(sheets)))
@@ -138,17 +175,19 @@ def main():
         input_size = inpages[0].MediaBox[2:]
         output_size = sheets[0].MediaBox[2:]
         print("Input size:        {}x{}".format(input_size[0], input_size[1]))
-        print("Output size:       {}x{}".format(int(output_size[0]),
-                                                int(output_size[1])))
+        print(
+            "Output size:       {}x{}".format(int(output_size[0]), int(output_size[1]))
+        )
 
         print("Signature length:  {:>3}".format(signature_length))
         print("Signature count:   {:>3}".format(signature_count))
-        divider_count = 2*signature_count - 2 if args.divider else 0
+        divider_count = 2 * signature_count - 2 if args.divider else 0
         print("Divider pages:     {:>3}".format(divider_count))
 
     # save imposed pdf
     core.save_pdf(infile, sheets)
     print("Imposed PDF file saved to {}".format(core.create_filename(infile)))
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     sys.exit(main())
