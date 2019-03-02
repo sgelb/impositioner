@@ -3,8 +3,8 @@
 Main entry point for command-line program, invoke as `impositioner'
 """
 
-import sys
-import argparse
+from sys import exit
+from argparse import ArgumentParser, Namespace, RawDescriptionHelpFormatter
 import textwrap
 from pdfrw import PdfReader
 import math
@@ -12,11 +12,13 @@ import math
 from . import core
 from . import __version__
 
+from typing import Dict, List
 
-def parse_arguments():
-    parser = argparse.ArgumentParser(
+
+def parse_arguments() -> Namespace:
+    parser = ArgumentParser(
         prog="impositioner",
-        formatter_class=argparse.RawDescriptionHelpFormatter,
+        formatter_class=RawDescriptionHelpFormatter,
         description=textwrap.dedent(
             """
             Impose PDF file for booklet printing
@@ -34,7 +36,7 @@ def parse_arguments():
 
         Create booklet with custom output format. Center each page before
         combining:
-        $ %(prog)s -f 209.5x209.5 input.pdf
+        $ %(prog)s -f 209.5x209.5 -c input.pdf
         """
         ),
     )
@@ -113,19 +115,21 @@ def parse_arguments():
     return parser.parse_args()
 
 
-def main():
-    args = parse_arguments()
+def main() -> None:
+    args: Namespace = parse_arguments()
 
     # validate cli arguments
-    infile = core.validate_infile(args.PDF)
-    signature_length = core.validate_signature_length(args.signature_length)
-    papersize = core.validate_papersize(args.paperformat, args.unit)
-    pages_per_sheet = core.validate_pages_per_sheet(args.nup)
+    infile: str = core.validate_infile(args.PDF)
+    signature_length: int = core.validate_signature_length(args.signature_length)
+    papersize: Dict[str, List[int]] = core.validate_papersize(
+        args.paperformat, args.unit
+    )
+    pages_per_sheet: int = core.validate_pages_per_sheet(args.nup)
 
     # read pdf file
-    inpages = PdfReader(infile).pages
+    inpages: List = PdfReader(infile).pages
 
-    page_count = len(inpages)
+    page_count: int = len(inpages)
 
     # calculate signature length, if not set manually through cli argument
     if signature_length == 0:
@@ -135,20 +139,20 @@ def main():
         # calculate signature length
         signature_length = core.calculate_signature_length(page_count)
 
-    signature_count = math.ceil(page_count / signature_length)
+    signature_count: int = math.ceil(page_count / signature_length)
 
     # pad with blank pages
-    blank_pages_count = signature_length * signature_count - page_count
+    blank_pages_count: int = signature_length * signature_count - page_count
     if blank_pages_count:
         inpages.extend([core.create_blank_copy(inpages[0])] * blank_pages_count)
 
     # calculate output size of single page for centering content
-    output_size = 0
+    output_size: List[int] = None
     if papersize and args.center_subpage:
         output_size = core.calculate_scaled_sub_page_size(pages_per_sheet, papersize)
 
     # impose and merge pages, creating sheets
-    sheets = core.impose_and_merge(
+    sheets: List = core.impose_and_merge(
         inpages, signature_length, pages_per_sheet, output_size, args.binding
     )
 
@@ -169,19 +173,18 @@ def main():
             80,
         ):
             print(line)
+
         print("Total input page:  {:>3}".format(page_count))
         print("Total output page: {:>3}".format(len(sheets)))
 
         input_size = inpages[0].MediaBox[2:]
         output_size = sheets[0].MediaBox[2:]
-        print("Input size:        {}x{}".format(input_size[0], input_size[1]))
-        print(
-            "Output size:       {}x{}".format(int(output_size[0]), int(output_size[1]))
-        )
+        divider_count = 2 * signature_count - 2 if args.divider else 0
 
+        print("Input size:        {}x{}".format(input_size[0], input_size[1]))
+        print("Output size:       {}x{}".format(output_size[0], output_size[1]))
         print("Signature length:  {:>3}".format(signature_length))
         print("Signature count:   {:>3}".format(signature_count))
-        divider_count = 2 * signature_count - 2 if args.divider else 0
         print("Divider pages:     {:>3}".format(divider_count))
 
     # save imposed pdf
@@ -190,4 +193,4 @@ def main():
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    exit(main())

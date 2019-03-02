@@ -52,6 +52,7 @@ $ impositioner -b right -s 20 input.pdf
 
 Create booklet with custom output format. Center each page before
 combining:
+$ impositioner -f 209.5x209.5 -c input.pdf
 ```
 
 
