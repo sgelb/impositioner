@@ -1,6 +1,3 @@
-run:
-	poetry run impositioner
-
 test: typecheck pytest
 
 pytest:
