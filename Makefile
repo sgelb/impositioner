@@ -1,7 +1,12 @@
 run:
 	poetry run impositioner
 
-test:
+test: typecheck pytest
+
+pytest:
 	poetry run py.test -v --cov-report term-missing --cov=impositioner
 
-.PHONY: init test
+typecheck:
+	poetry run pytype impositioner
+
+.PHONY: init test typecheck
