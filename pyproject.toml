@@ -7,7 +7,7 @@ license = "GPL-3.0"
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.7"
+python = "^3.6"
 pdfrw = "^0.4.0"
 
 [tool.poetry.dev-dependencies]

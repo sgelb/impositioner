@@ -1,10 +1,17 @@
 # https://travis-ci.org/sgelb/impositioner
+dist: xenial
 language: python
 python:
-  - "3.3"
-  - "3.4"
-  - "3.5"
-script: py.test
+  - "3.6"
+  - "3.7"
+before_install:
+  - pip install poetry
+  - pip install pytype
+install:
+  - poetry install
+script:
+  - poetry run py.test
+  - poetry run pytype impositioner
 branches:
   only:
     - master
