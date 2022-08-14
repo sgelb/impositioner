@@ -2,7 +2,7 @@
 name = "impositioner"
 version = "0.1.0"
 description = "Impose a PDF file for booklet printing"
-authors = ["sgelb <stephan.halbritter@haw-hamburg.de>"]
+authors = ["sgelb <sgelb@users.noreply.github.com>"]
 license = "GPL-3.0"
 readme = "README.md"
 
