@@ -3,19 +3,33 @@
 Main entry point for command-line program, invoke as `impositioner'
 """
 
-from sys import exit
-from argparse import ArgumentParser, Namespace, RawDescriptionHelpFormatter
-import textwrap
-from pdfrw import PdfReader
 import math
-
-from . import core
-from . import __version__
-
+import textwrap
+from argparse import ArgumentParser, RawDescriptionHelpFormatter
+from dataclasses import dataclass
+from sys import exit
 from typing import List, Optional
 
+from pdfrw import PdfReader
 
-def parse_arguments() -> Namespace:
+from . import __version__, core
+
+
+@dataclass
+class Arguments:
+    pdf: str
+    nup: int = 2
+    paperformat: Optional[str] = None
+    unit: str = "mm"
+    binding: str = "left"
+    center_subpage: bool = False
+    signature_length: int = -1
+    outfolder: str = "./"
+    divider: bool = False
+    verbose: bool = False
+
+
+def parse_arguments() -> Arguments:
     parser = ArgumentParser(
         prog="impositioner",
         formatter_class=RawDescriptionHelpFormatter,
@@ -65,6 +79,14 @@ def parse_arguments() -> Namespace:
         " WIDTHxHEIGHT (default: auto)",
     )
     parser.add_argument(
+        "-o",
+        dest="outfolder",
+        action="store",
+        type=str,
+        default="./",
+        help="Folder where impositioned pdf file are saved (default: current folder)",
+    )
+    parser.add_argument(
         "-u",
         dest="unit",
         action="store",
@@ -101,30 +123,37 @@ def parse_arguments() -> Namespace:
         "-d",
         dest="divider",
         action="store_true",
-        default=False,
-        help="Insert blank sheets between signature stacks to"
-        " ease separation after printing",
+        help="Insert blank sheets between signature stacks to" " ease separation after printing",
     )
-    parser.add_argument(
-        "-v", dest="verbose", action="store_true", default=False, help="Verbose output"
+    parser.add_argument("-v", dest="verbose", action="store_true", help="Verbose output")
+    parser.add_argument("--version", action="version", version="%(prog)s {}".format(__version__))
+
+    args = parser.parse_args()
+    return Arguments(
+        pdf=args.PDF,
+        nup=args.nup,
+        paperformat=args.paperformat,
+        unit=args.unit,
+        binding=args.binding,
+        center_subpage=args.center_subpage,
+        signature_length=args.signature_length,
+        outfolder=args.outfolder,
+        divider=args.divider,
+        verbose=args.verbose,
     )
-    parser.add_argument(
-        "--version", action="version", version="%(prog)s {}".format(__version__)
-    )
-
-    return parser.parse_args()
 
 
-def main() -> None:
-    args: Namespace = parse_arguments()
-
-    # validate cli arguments
-    infile: str = core.validate_infile(args.PDF)
+def run(args: Arguments) -> None:
+    # validate arguments
+    infile: str = core.validate_infile(args.pdf)
     signature_length: int = core.validate_signature_length(args.signature_length)
-    papersize: Optional[List[int]] = core.validate_papersize(
-        args.paperformat, args.unit
-    )
+    papersize: Optional[List[int]] = core.validate_papersize(args.paperformat, args.unit)
     pages_per_sheet: int = core.validate_pages_per_sheet(args.nup)
+    center_subpage = args.center_subpage
+    binding = args.binding
+    divider = args.divider
+    outfolder = args.outfolder
+    verbose = args.verbose
 
     # read pdf file
     inpages: List = PdfReader(infile).pages
@@ -148,16 +177,14 @@ def main() -> None:
 
     # calculate output size of single page for centering content
     output_size: Optional[List[int]] = None
-    if papersize and args.center_subpage:
+    if papersize and center_subpage:
         output_size = core.calculate_scaled_sub_page_size(pages_per_sheet, papersize)
 
     # impose and merge pages, creating sheets
-    sheets: List = core.impose_and_merge(
-        inpages, signature_length, pages_per_sheet, output_size, args.binding
-    )
+    sheets: List = core.impose_and_merge(inpages, signature_length, pages_per_sheet, output_size, binding)
 
     # add divider pages
-    if args.divider:
+    if divider:
         sheets = core.add_divider(sheets, signature_length)
 
     # resize result
@@ -165,11 +192,9 @@ def main() -> None:
         sheets = core.resize(sheets, papersize)
 
     # print infos
-    if args.verbose:
+    if verbose:
         for line in textwrap.wrap(
-            "Standard paper formats: {}".format(
-                ", ".join(sorted(core.paperformats.keys()))
-            ),
+            "Standard paper formats: {}".format(", ".join(sorted(core.paperformats.keys()))),
             80,
         ):
             print(line)
@@ -179,7 +204,7 @@ def main() -> None:
 
         input_size = inpages[0].MediaBox[2:]
         output_size = sheets[0].MediaBox[2:]
-        divider_count = 2 * signature_count - 2 if args.divider else 0
+        divider_count = 2 * signature_count - 2 if divider else 0
 
         print("Input size:        {}x{}".format(input_size[0], input_size[1]))
         print("Output size:       {}x{}".format(output_size[0], output_size[1]))
@@ -188,8 +213,12 @@ def main() -> None:
         print("Divider pages:     {:>3}".format(divider_count))
 
     # save imposed pdf
-    core.save_pdf(infile, sheets)
-    print("Imposed PDF file saved to {}".format(core.create_filename(infile)))
+    core.save_pdf(infile, sheets, outfolder)
+    print("Imposed PDF file saved to {}".format(core.create_outfile(infile, outfolder)))
+
+
+def main():
+    return run(args=parse_arguments())
 
 
 if __name__ == "__main__":

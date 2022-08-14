@@ -17,11 +17,11 @@
 
 import math
 import os
-from pdfrw import PdfReader, PdfWriter, PageMerge
 import re
 import sys
+from typing import Any, Dict, Iterator, List, Optional, Tuple
 
-from typing import Dict, List, Iterator, Optional, Any, Tuple
+from pdfrw import PageMerge, PdfReader, PdfWriter
 
 paperformats: Dict[str, List[int]] = {
     "a0": [2384, 3371],
@@ -89,9 +89,7 @@ def impose(pages: List, pages_per_sheet: int, binding: str) -> List:
         # frontside
         sheets.append(merge((pages[half + i], pages[i]), rotation, binding))
         # backside
-        sheets.append(
-            merge((pages[i + 1], pages[half + i + 1]), (rotation + 180) % 360, binding)
-        )
+        sheets.append(merge((pages[i + 1], pages[half + i + 1]), (rotation + 180) % 360, binding))
 
     return impose(sheets, pages_per_sheet // 2, binding)
 
@@ -128,9 +126,7 @@ def create_blank_copy(page) -> Any:
     return blank_page.render()
 
 
-def calculate_scaled_sub_page_size(
-    pages_per_sheet: int, papersize: Optional[List[int]]
-) -> List[int]:
+def calculate_scaled_sub_page_size(pages_per_sheet: int, papersize: Optional[List[int]]) -> List[int]:
     # return [w, h] of subpage scaled according to final output size
     if pages_per_sheet == 2:
         # columns = 2, rows = 1
@@ -282,9 +278,7 @@ def impose_and_merge(
     sheets = []
     for signature in cut_in_signatures(inpages, signature_length):
         # reverse second half of signature to simplify imposition
-        signature[len(signature) // 2 :] = list(
-            reversed(signature[len(signature) // 2 :])
-        )
+        signature[len(signature) // 2 :] = list(reversed(signature[len(signature) // 2 :]))
 
         # add blank pages
         signature = add_blanks(signature, pages_per_sheet)
@@ -311,13 +305,20 @@ def add_divider(sheets: List, signature_length: int) -> List:
     return s
 
 
-def create_filename(infile) -> str:
-    return "booklet." + os.path.basename(infile)
+def outfile(outfolder, infile):
+    return os.path.join(outfolder, "booklet." + os.path.basename(infile))
 
 
-def save_pdf(infile, outpages) -> None:
+def create_outfile(infile, outfolder) -> str:
+    outfolder = os.path.expanduser(outfolder)
+    if not os.path.exists(outfolder):
+        os.makedirs(outfolder)
+    return outfile(outfolder, infile)
+
+
+def save_pdf(infile, outpages, outdir) -> None:
     trailer = PdfReader(infile)
-    outfn = create_filename(infile)
+    outfn = create_outfile(infile, outdir)
     writer = PdfWriter()
     writer.addpages(outpages)
     writer.trailer.Info = trailer.Info
