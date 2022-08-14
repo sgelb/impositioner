@@ -1,5 +1,4 @@
 ## impositioner
-[![Build Status](https://travis-ci.org/sgelb/impositioner.svg?branch=master)](https://travis-ci.org/sgelb/impositioner)
 
 A simple script for impositioning PDF files for booklet printing.
 
