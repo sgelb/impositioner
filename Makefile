@@ -6,4 +6,10 @@ pytest:
 typecheck:
 	poetry run pytype impositioner
 
+black:
+	poetry run black ./impositioner
+
+isort:
+	poetry run isort ./impositioner
+
 .PHONY: init test typecheck

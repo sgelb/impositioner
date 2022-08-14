@@ -15,6 +15,14 @@ pytest = "^7.1.2"
 pytest-cov = "^3.0"
 pytype = { version = "^2022", python = ">=3.7,<3.11" }
 reportlab = "^3.5"
+black = "^22.6.0"
+isort = "^5.10.1"
+
+[tool.isort]
+profile = "black"
+
+[tool.black]
+line-length = 120
 
 [tool.poetry.scripts]
 impositioner = 'impositioner.cli:main'
