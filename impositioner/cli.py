@@ -12,7 +12,7 @@ import math
 from . import core
 from . import __version__
 
-from typing import Dict, List
+from typing import List, Optional
 
 
 def parse_arguments() -> Namespace:
@@ -121,7 +121,7 @@ def main() -> None:
     # validate cli arguments
     infile: str = core.validate_infile(args.PDF)
     signature_length: int = core.validate_signature_length(args.signature_length)
-    papersize: Dict[str, List[int]] = core.validate_papersize(
+    papersize: Optional[List[int]] = core.validate_papersize(
         args.paperformat, args.unit
     )
     pages_per_sheet: int = core.validate_pages_per_sheet(args.nup)
@@ -147,7 +147,7 @@ def main() -> None:
         inpages.extend([core.create_blank_copy(inpages[0])] * blank_pages_count)
 
     # calculate output size of single page for centering content
-    output_size: List[int] = None
+    output_size: Optional[List[int]] = None
     if papersize and args.center_subpage:
         output_size = core.calculate_scaled_sub_page_size(pages_per_sheet, papersize)
 

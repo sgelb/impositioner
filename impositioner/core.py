@@ -129,7 +129,7 @@ def create_blank_copy(page) -> Any:
 
 
 def calculate_scaled_sub_page_size(
-    pages_per_sheet: int, papersize: Optional[Dict]
+    pages_per_sheet: int, papersize: Optional[List[int]]
 ) -> List[int]:
     # return [w, h] of subpage scaled according to final output size
     if pages_per_sheet == 2:
@@ -223,7 +223,7 @@ def validate_infile(pdf: str) -> str:
 
 
 def validate_papersize(paperformat: str, unit: str) -> Optional[List[int]]:
-    papersize: List[int] = None
+    papersize: Optional[List[int]] = None
     if paperformat:
         # standard format
         if paperformat in paperformats:
@@ -276,7 +276,7 @@ def impose_and_merge(
     inpages: List,
     signature_length: int,
     pages_per_sheet: int,
-    output_size: List[int],
+    output_size: Optional[List[int]],
     binding: str,
 ) -> List:
     sheets = []
