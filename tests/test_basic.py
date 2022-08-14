@@ -1,9 +1,9 @@
-from pdfrw import PdfReader, PageMerge
 import os
 import unittest
 
-from .context import core
+from pdfrw import PageMerge, PdfReader
 
+from .context import core
 
 # class test_cli(unittest.TestCase):
 
@@ -48,30 +48,16 @@ class test_core(unittest.TestCase):
         self.assertEqual(core.calculate_signature_length(65), 36)
 
     def test_cut_in_signatures(self):
-        self.assertEqual(
-            list(core.cut_in_signatures([1, 2, 3, 4], 2)), [[1, 2], [3, 4]]
-        )
+        self.assertEqual(list(core.cut_in_signatures([1, 2, 3, 4], 2)), [[1, 2], [3, 4]])
         self.assertEqual(list(core.cut_in_signatures([1, 2, 3, 4], 4)), [[1, 2, 3, 4]])
-        self.assertEqual(
-            list(core.cut_in_signatures([1, 2, 3, 4], 1)), [[1], [2], [3], [4]]
-        )
-        self.assertEqual(
-            list(core.cut_in_signatures([1, 2, 3, 4], 3)), [[1, 2, 3], [4]]
-        )
+        self.assertEqual(list(core.cut_in_signatures([1, 2, 3, 4], 1)), [[1], [2], [3], [4]])
+        self.assertEqual(list(core.cut_in_signatures([1, 2, 3, 4], 3)), [[1, 2, 3], [4]])
 
     def test_calculate_scaled_sub_page_size(self):
-        self.assertEqual(
-            core.calculate_scaled_sub_page_size(2, core.paperformats["a5"]), [298, 420]
-        )
-        self.assertEqual(
-            core.calculate_scaled_sub_page_size(4, core.paperformats["a5"]), [210, 298]
-        )
-        self.assertEqual(
-            core.calculate_scaled_sub_page_size(2, core.paperformats["a4"]), [421, 595]
-        )
-        self.assertEqual(
-            core.calculate_scaled_sub_page_size(8, core.paperformats["a4"]), [298, 210]
-        )
+        self.assertEqual(core.calculate_scaled_sub_page_size(2, core.paperformats["a5"]), [298, 420])
+        self.assertEqual(core.calculate_scaled_sub_page_size(4, core.paperformats["a5"]), [210, 298])
+        self.assertEqual(core.calculate_scaled_sub_page_size(2, core.paperformats["a4"]), [421, 595])
+        self.assertEqual(core.calculate_scaled_sub_page_size(8, core.paperformats["a4"]), [298, 210])
 
     def test_add_blanks(self):
         with self.assertRaises(ZeroDivisionError):
@@ -122,15 +108,11 @@ class test_core(unittest.TestCase):
 
         for fmt in (f for f in core.paperformats.keys() if f != "ledger"):
             resized = core.resize(self.landscape_pdf, core.paperformats[fmt])
-            self.assertEqual(
-                resized[0].MediaBox[2:], list(reversed(core.paperformats[fmt]))
-            )
+            self.assertEqual(resized[0].MediaBox[2:], list(reversed(core.paperformats[fmt])))
 
         # ledger is the only landscape format, so test it extra
         resized = core.resize(self.portrait_pdf, core.paperformats["ledger"])
-        self.assertEqual(
-            resized[0].MediaBox[2:], list(reversed(core.paperformats["ledger"]))
-        )
+        self.assertEqual(resized[0].MediaBox[2:], list(reversed(core.paperformats["ledger"])))
 
         resized = core.resize(self.landscape_pdf, core.paperformats["ledger"])
         self.assertEqual(resized[0].MediaBox[2:], core.paperformats["ledger"])
@@ -209,10 +191,11 @@ class test_core(unittest.TestCase):
         with self.assertRaises(TypeError):
             core.validate_signature_length("A")
 
-    def test_create_filename(self):
-        self.assertEqual(core.create_filename("foo/bar.tmp"), "booklet.bar.tmp")
-        self.assertEqual(core.create_filename("/foo/bar.tmp"), "booklet.bar.tmp")
-        self.assertEqual(core.create_filename("~/bar.tmp"), "booklet.bar.tmp")
+    def test_outfile(self):
+        self.assertEqual(core.outfile("bar", "foo/bar.tmp"), "bar/booklet.bar.tmp")
+        self.assertEqual(core.outfile("", "/foo/bar.tmp"), "booklet.bar.tmp")
+        self.assertEqual(core.outfile("~", "/foo/bar.tmp"), "~/booklet.bar.tmp")
+        self.assertEqual(core.outfile("baz", "~/bar.tmp"), "baz/booklet.bar.tmp")
 
     def test_add_divider(self):
         blank_page = core.create_blank_copy(self.portrait_pdf[0])
@@ -235,9 +218,6 @@ class test_core(unittest.TestCase):
     #     pass
 
     # def test_impose_and_merge(self):
-    #     pass
-
-    # def test_save_pdf(self):
     #     pass
 
 

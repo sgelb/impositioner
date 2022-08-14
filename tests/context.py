@@ -1,5 +1,7 @@
-import sys
 import os
-sys.path.insert(0, os.path.abspath('..'))
+import sys
 
+sys.path.insert(0, os.path.abspath(".."))
+
+import impositioner.cli as cli
 import impositioner.core as core
