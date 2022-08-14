@@ -1,19 +1,19 @@
 [tool.poetry]
 name = "impositioner"
-version = "0.1.0"
+version = "0.2.0"
 description = "Impose a PDF file for booklet printing"
 authors = ["sgelb <sgelb@users.noreply.github.com>"]
 license = "GPL-3.0"
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.6"
+python = "^3.7"
 pdfrw = "^0.4.0"
 
 [tool.poetry.dev-dependencies]
-pytest = "^4.3"
-pytest-cov = "^2.6"
-pytype = "^2019.3"
+pytest = "^7.1.2"
+pytest-cov = "^3.0"
+pytype = { version = "^2022", python = ">=3.7,<3.11" }
 reportlab = "^3.5"
 
 [tool.poetry.scripts]
