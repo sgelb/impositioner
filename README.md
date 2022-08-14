@@ -11,6 +11,11 @@ A simple script for impositioning PDF files for booklet printing.
 - binding on any side
 - option to set output size
 
+### Development and Installation
+
+This project uses [Poetry](https://python-poetry.org/) for dependency managment. There is also a
+simple `Makefile` with some convenience commands.
+
 ### Options
 
 ```
@@ -58,8 +63,7 @@ $ impositioner -f 209.5x209.5 -c input.pdf
 
 ### Printing
 
-This depends on your printer. This is how I print on my Samsung printer without
-duplex function:
+This depends on your printer. This is how I print on my Samsung printer without duplex function:
 
 1. Print all odd pages.
 2. Put printed pages back. I have to rotate them 180°.
