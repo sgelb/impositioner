@@ -21,8 +21,8 @@ import re
 import sys
 from typing import Any, Dict, Iterator, List, Optional, Tuple
 
-from pdfrw import PageMerge, PdfReader, PdfWriter
 import pdfrw.pagemerge
+from pdfrw import PageMerge, PdfReader, PdfWriter
 from pdfrw.objects.pdfdict import PdfDict
 
 paperformats: Dict[str, List[int]] = {
@@ -128,7 +128,7 @@ def create_blank_copy(page) -> Any:
     return blank_page.render()
 
 
-def calculate_scaled_sub_page_size(pages_per_sheet: int, papersize: Optional[List[int]]) -> List[int]:
+def calculate_scaled_sub_page_size(pages_per_sheet: int, papersize: List[int]) -> List[int]:
     # return [w, h] of subpage scaled according to final output size
     if pages_per_sheet == 2:
         # columns = 2, rows = 1
@@ -220,7 +220,7 @@ def validate_infile(pdf: str) -> str:
     return infile
 
 
-def validate_papersize(paperformat: str, unit: str) -> Optional[List[int]]:
+def validate_papersize(paperformat: str | None, unit: str) -> Optional[List[int]]:
     papersize: Optional[List[int]] = None
     if paperformat:
         # standard format
@@ -229,23 +229,24 @@ def validate_papersize(paperformat: str, unit: str) -> Optional[List[int]]:
 
         # custom format
         else:
-            # floatxfloat
-            pattern = re.compile(r"^([0-9]*\.?[0-9]+)x([0-9]*\.?[0-9]+)$", re.I)
-            match = re.match(pattern, paperformat)
-            if match:
-                papersize = [
-                    int(round(units[unit] * float(match.group(1)))),
-                    int(round(units[unit] * float(match.group(2)))),
-                ]
-            else:
-                # invalid input
-                print(
-                    "Unknown paper format: {}. Must be WIDTHxHEIGHT (e.g 4.3x11)"
-                    " or one of the following standard formats: {}".format(
-                        paperformat, ", ".join(sorted(paperformats.keys()))
+            if unit:
+                # floatxfloat
+                pattern = re.compile(r"^([0-9]*\.?[0-9]+)x([0-9]*\.?[0-9]+)$", re.I)
+                match = re.match(pattern, paperformat)
+                if match:
+                    papersize = [
+                        int(round(units[unit] * float(match.group(1)))),
+                        int(round(units[unit] * float(match.group(2)))),
+                    ]
+                else:
+                    # invalid input
+                    print(
+                        "Unknown paper format: {}. Must be WIDTHxHEIGHT (e.g 4.3x11)"
+                        " or one of the supported standard formats: {}".format(
+                            paperformat, ", ".join(sorted(paperformats.keys()))
+                        )
                     )
-                )
-                sys.exit(1)
+                    sys.exit(1)
 
     return papersize
 

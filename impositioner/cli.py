@@ -5,7 +5,7 @@ Main entry point for command-line program, invoke as `impositioner'
 
 import math
 import textwrap
-from argparse import ArgumentParser, RawDescriptionHelpFormatter
+from argparse import Action, ArgumentParser, RawDescriptionHelpFormatter
 from dataclasses import dataclass
 from sys import exit
 from typing import List, Optional
@@ -29,6 +29,17 @@ class Arguments:
     verbose: bool = False
 
 
+class ListPaperFormatsAction(Action):
+    def __init__(self, option_strings, dest, help):
+        super().__init__(option_strings=option_strings, dest=dest, const=True, nargs=0, help=help)
+
+    def __call__(self, parser, namespace, values, option_string=None):
+        if self.const:
+            print("Supported paper formats:")
+            print(", ".join(sorted(core.paperformats.keys())))
+            parser.exit()
+
+
 def parse_arguments() -> Arguments:
     parser = ArgumentParser(
         prog="impositioner",
@@ -42,14 +53,13 @@ def parse_arguments() -> Arguments:
             """
         Examples:
 
-        Print 4 pages on an A4 sheet for creating an A6 booklet:
+        4 pages on an A4 sheet for creating an A6 booklet:
         $ %(prog)s -n 4 -f a4 input.pdf
 
-        Create booklet with binding on right side and signatures of 20 pages:
+        Binding on right side and signatures of 20 pages:
         $ %(prog)s -b right -s 20 input.pdf
 
-        Create booklet with custom output format. Center each page before
-        combining:
+        Use custom output format and center each page before combining:
         $ %(prog)s -f 209.5x209.5 -c input.pdf
         """
         ),
@@ -66,7 +76,7 @@ def parse_arguments() -> Arguments:
         action="store",
         type=int,
         default="2",
-        help="Pages per sheet (default: 2)",
+        help="pages per sheet (default: 2)",
     )
     parser.add_argument(
         "-f",
@@ -74,7 +84,7 @@ def parse_arguments() -> Arguments:
         action="store",
         type=str.lower,
         metavar="FORMAT",
-        help="Output paper sheet format. Must be standard"
+        help="output paper sheet format. Must be standard"
         " paper format (A4, letter, ...) or custom"
         " WIDTHxHEIGHT (default: auto)",
     )
@@ -84,7 +94,7 @@ def parse_arguments() -> Arguments:
         action="store",
         type=str,
         default="./",
-        help="Folder where impositioned pdf file are saved (default: current folder)",
+        help="folder where impositioned pdf file are saved (default: current folder)",
     )
     parser.add_argument(
         "-u",
@@ -92,7 +102,7 @@ def parse_arguments() -> Arguments:
         action="store",
         default="mm",
         choices=["cm", "inch", "mm"],
-        help="Unit if using -f with custom format" " (default: mm)",
+        help="unit if using -f with custom format (default: mm)",
     )
     parser.add_argument(
         "-b",
@@ -101,15 +111,13 @@ def parse_arguments() -> Arguments:
         type=str.lower,
         choices=["left", "top", "right", "bottom"],
         default="left",
-        help="Side of binding (default: left)",
+        help="side of binding (default: left)",
     )
     parser.add_argument(
         "-c",
         dest="center_subpage",
         action="store_true",
-        help="Center each page when resizing. Has no effect if"
-        " output format is multiple of input format (default:"
-        " center combinated pages)",
+        help="center each page when resizing. Has no effect if output format is multiple of input format (default: center combinated pages)",
     )
     parser.add_argument(
         "-s",
@@ -117,15 +125,21 @@ def parse_arguments() -> Arguments:
         action="store",
         type=int,
         default=-1,
-        help="Signature length. Set to 0 to disable " "signatures (default: auto)",
+        help="signature length. Set to 0 to disable signatures (default: set automatically)",
     )
     parser.add_argument(
         "-d",
         dest="divider",
         action="store_true",
-        help="Insert blank sheets between signature stacks to" " ease separation after printing",
+        help="insert blank sheets between signature stacks to ease separation after printing",
     )
     parser.add_argument("-v", dest="verbose", action="store_true", help="Verbose output")
+    parser.add_argument(
+        "--list-formats",
+        dest="list_formats",
+        action=ListPaperFormatsAction,
+        help="list standard paper formats supported by -f and exit",
+    )
     parser.add_argument("--version", action="version", version="%(prog)s {}".format(__version__))
 
     args = parser.parse_args()
