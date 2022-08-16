@@ -17,6 +17,7 @@
 
 import argparse
 from reportlab import pdfgen
+from reportlab.pdfgen import canvas
 
 paperformats = {
     "a0": [2384, 3371],
@@ -75,22 +76,22 @@ def main():
         orientation = "landscape"
 
     outfname = "{}_{}_{}.pdf".format(args.size, orientation, str(args.pages))
-    canvas = pdfgen.canvas.Canvas(outfname, pagesize)
+    cv = canvas.Canvas(outfname, pagesize)
     w, h = pagesize
-    font = canvas.getAvailableFonts()[0]
+    font = cv.getAvailableFonts()[0]
 
     for i in range(1, args.pages + 1):
-        canvas.setFont(font, 50)
-        canvas.drawCentredString(w / 2, h / 2 + 100, orientation)
-        canvas.drawCentredString(w / 2, h / 2 + 50, args.size)
-        canvas.setFont(font, 100)
-        canvas.drawCentredString(w / 2, h / 2 - 50, str(i))
+        cv.setFont(font, 50)
+        cv.drawCentredString(w / 2, h / 2 + 100, orientation)
+        cv.drawCentredString(w / 2, h / 2 + 50, args.size)
+        cv.setFont(font, 100)
+        cv.drawCentredString(w / 2, h / 2 - 50, str(i))
         if args.bbox:
-            canvas.setLineWidth(2)
-            canvas.setStrokeColorRGB(255, 0, 255)
-            canvas.rect(5, 5, w - 10, h - 10)
-        canvas.showPage()
-    canvas.save()
+            cv.setLineWidth(2)
+            cv.setStrokeColorRGB(255, 0, 255)
+            cv.rect(5, 5, w - 10, h - 10)
+        cv.showPage()
+    cv.save()
 
     print("Created", outfname)
 

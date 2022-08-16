@@ -22,6 +22,8 @@ import sys
 from typing import Any, Dict, Iterator, List, Optional, Tuple
 
 from pdfrw import PageMerge, PdfReader, PdfWriter
+import pdfrw.pagemerge
+from pdfrw.objects.pdfdict import PdfDict
 
 paperformats: Dict[str, List[int]] = {
     "a0": [2384, 3371],
@@ -94,13 +96,13 @@ def impose(pages: List, pages_per_sheet: int, binding: str) -> List:
     return impose(sheets, pages_per_sheet // 2, binding)
 
 
-def merge(pages, rotation, binding) -> Any:
+def merge(pages: Tuple[PdfDict, PdfDict], rotation: int, binding: str) -> Any:
     page = PageMerge() + (p for p in pages)
     page = set_binding(page, binding, rotation)
     return page.render()
 
 
-def set_binding(page, binding, rotation):
+def set_binding(page: pdfrw.pagemerge.PageMerge, binding: str, rotation: int) -> pdfrw.pagemerge.PageMerge:
     if binding == "left":
         page[1].x += page[0].w
         page.rotate = rotation if is_landscape(page) else 0
@@ -205,7 +207,7 @@ def resize(outpages: List, output_size: List[int]) -> List:
     return o
 
 
-def is_landscape(page) -> Any:
+def is_landscape(page: pdfrw.pagemerge.PageMerge) -> Any:
     dim = page.xobj_box[2:]
     return dim[0] > dim[1]
 
@@ -305,18 +307,18 @@ def add_divider(sheets: List, signature_length: int) -> List:
     return s
 
 
-def outfile(outfolder, infile):
+def outfile(outfolder: str, infile: str) -> str:
     return os.path.join(outfolder, "booklet." + os.path.basename(infile))
 
 
-def create_outfile(infile, outfolder) -> str:
+def create_outfile(infile: str, outfolder: str) -> str:
     outfolder = os.path.expanduser(outfolder)
     if not os.path.exists(outfolder):
         os.makedirs(outfolder)
     return outfile(outfolder, infile)
 
 
-def save_pdf(infile, outpages, outdir) -> None:
+def save_pdf(infile: str, outpages: List[PdfDict], outdir: str) -> None:
     trailer = PdfReader(infile)
     outfn = create_outfile(infile, outdir)
     writer = PdfWriter()
