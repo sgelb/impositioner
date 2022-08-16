@@ -42,12 +42,12 @@ paperformats = {
 def main():
     parser = argparse.ArgumentParser(
         description="""
-            Create sample PDF file with specified number of pages and size
+            Create sample PDF file with specified number of pages and format
             """
     )
     parser.add_argument("pages", action="store", type=int, help="number of pages")
     parser.add_argument(
-        "size",
+        "format",
         action="store",
         type=str.lower,
         help="standard paper format like A4, letter, ",
@@ -61,7 +61,7 @@ def main():
     parser.add_argument("--bbox", "-b", action="store_true", help="draw bbox")
     args = parser.parse_args()
 
-    if args.size not in paperformats:
+    if args.format not in paperformats:
         print(
             "Unknown paper format: {}. Must be one of the following "
             "standard formats: {}".format(
@@ -69,13 +69,13 @@ def main():
             )
         )
 
-    pagesize = paperformats[args.size]
+    pagesize = paperformats[args.format]
     orientation = "portrait"
     if args.landscape:
         pagesize = list(reversed(pagesize))
         orientation = "landscape"
 
-    outfname = "{}_{}_{}.pdf".format(args.size, orientation, str(args.pages))
+    outfname = "{}_{}_{}.pdf".format(args.format, orientation, str(args.pages))
     cv = canvas.Canvas(outfname, pagesize)
     w, h = pagesize
     font = cv.getAvailableFonts()[0]
@@ -83,7 +83,7 @@ def main():
     for i in range(1, args.pages + 1):
         cv.setFont(font, 50)
         cv.drawCentredString(w / 2, h / 2 + 100, orientation)
-        cv.drawCentredString(w / 2, h / 2 + 50, args.size)
+        cv.drawCentredString(w / 2, h / 2 + 50, args.format)
         cv.setFont(font, 100)
         cv.drawCentredString(w / 2, h / 2 - 50, str(i))
         if args.bbox:

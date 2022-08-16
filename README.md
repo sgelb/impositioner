@@ -10,11 +10,6 @@ A simple script for impositioning PDF files for booklet printing.
 - binding on any side
 - option to set output size
 
-### Development and Installation
-
-This project uses [Poetry](https://python-poetry.org/) for dependency managment. There is also a
-simple `Makefile` with some convenience commands.
-
 ### Options
 
 ```
@@ -59,6 +54,27 @@ combining:
 $ impositioner -f 209.5x209.5 -c input.pdf
 ```
 
+### Development and Installation
+
+This project uses [Poetry](https://python-poetry.org/) for dependency managment. There is also a
+simple `Makefile` with some convenience commands.
+
+You can use `tools/pdfSampler.py` to create sample pdfs:
+
+```
+usage: pdfSampler.py [-h] [--landscape] [--bbox] pages format
+
+Create sample PDF file with specified number of pages and format
+
+positional arguments:
+  pages            number of pages
+  format           standard paper format like A4, letter,
+
+options:
+  -h, --help       show this help message and exit
+  --landscape, -l  output in landscape (default: portrait)
+  --bbox, -b       draw bbox
+```
 
 ### Printing
 
