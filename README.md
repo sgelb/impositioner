@@ -39,7 +39,8 @@ optional arguments:
                         (default: auto)
   -d                    Insert blank sheets between signature stacks to ease
                         separation after printing
-  -v                    Verbose output
+  --list-formats        list standard paper formats supported by -f and exit
+  --version             Verbose output
 
 Examples:
 
