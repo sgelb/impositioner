@@ -23,6 +23,7 @@ profile = "black"
 
 [tool.black]
 line-length = 120
+preview = true
 
 [tool.poetry.scripts]
 impositioner = 'impositioner.cli:main'

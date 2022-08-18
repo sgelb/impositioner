@@ -16,6 +16,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>
 
 import argparse
+
 from reportlab import pdfgen
 from reportlab.pdfgen import canvas
 
@@ -63,8 +64,7 @@ def main():
 
     if args.format not in paperformats:
         print(
-            "Unknown paper format: {}. Must be one of the following "
-            "standard formats: {}".format(
+            "Unknown paper format: {}. Must be one of the following standard formats: {}".format(
                 args.paperformat, ", ".join(sorted(paperformats.keys()))
             )
         )

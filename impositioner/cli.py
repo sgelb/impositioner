@@ -84,9 +84,11 @@ def parse_arguments() -> Arguments:
         action="store",
         type=str.lower,
         metavar="FORMAT",
-        help="output paper sheet format. Must be standard"
-        " paper format (A4, letter, ...) or custom"
-        " WIDTHxHEIGHT (default: auto)",
+        help=(
+            "output paper sheet format. Must be standard"
+            " paper format (A4, letter, ...) or custom"
+            " WIDTHxHEIGHT (default: auto)"
+        ),
     )
     parser.add_argument(
         "-o",
@@ -117,7 +119,10 @@ def parse_arguments() -> Arguments:
         "-c",
         dest="center_subpage",
         action="store_true",
-        help="center each page when resizing. Has no effect if output format is multiple of input format (default: center combinated pages)",
+        help=(
+            "center each page when resizing. Has no effect if output format is multiple of input format (default:"
+            " center combinated pages)"
+        ),
     )
     parser.add_argument(
         "-s",
